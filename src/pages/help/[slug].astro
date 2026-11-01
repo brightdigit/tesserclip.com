@@ -1,0 +1,19 @@
+---
+// Help articles: one page per src/content/help/*.mdx except index (which is
+// /help/). clipboard-permission is opened by the app’s permission window, so
+// it must never move or 404 (spec §9.3, §10.2).
+import { getCollection, render } from 'astro:content';
+import HelpLayout from '../../layouts/HelpLayout.astro';
+
+export async function getStaticPaths() {
+  const entries = await getCollection('help', (entry) => entry.id !== 'index');
+  return entries.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+---
+
+<HelpLayout {...entry.data}>
+  <Content />
+</HelpLayout>

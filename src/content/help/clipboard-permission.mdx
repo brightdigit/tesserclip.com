@@ -1,0 +1,86 @@
+---
+title: Clipboard permission – TesserClip Help
+description: Allow TesserClip to read the clipboard in System Settings ▸ Privacy & Security, and what TesserClip reads.
+breadcrumb: Clipboard permission
+heading: Allow TesserClip to read the clipboard
+# Must match the app’s permission window body word for word (app SPEC §5 Permission).
+lead: TesserClip opens with whatever you last copied, ready to edit. macOS asks before an app reads the clipboard on its own, so allow TesserClip once in Privacy & Security.
+order: 1
+related:
+  - label: Getting started
+    href: /help/#getting-started
+  - label: Why is my new window empty?
+    href: /help/#faq
+  - label: Contact support
+    href: /support/
+---
+
+{/* /help/clipboard-permission/ — opened by the ? button in the app’s permission
+    window. Never move it. Copy: .agents/designs/05-help-clipboard-permission.html. */}
+
+import { Picture } from 'astro:assets';
+import HowToStep from '../../components/HowToStep.astro';
+import HowToSteps from '../../components/HowToSteps.astro';
+import Kbd from '../../components/Kbd.astro';
+import MenuPath from '../../components/MenuPath.astro';
+import NoteCallout from '../../components/NoteCallout.astro';
+import PathChip from '../../components/PathChip.astro';
+import QuestionIcon from '../../components/icons/QuestionIcon.astro';
+import permissionWindow from '../../assets/screens/06-permission-window.png';
+
+{/* System Settings wording, unverified on macOS 27 (spec §18 open question 2).
+    Each name appears only here, so a fix is a single edit. */}
+export const PANE = 'Paste from Other Apps';
+export const ALLOW_LABEL = 'Allow';
+export const PANE_PATH = ['System Settings', 'Privacy & Security', PANE];
+
+<figure class="mt-8 mb-6">
+  <div class="flex justify-center rounded-3xl bg-[linear-gradient(165deg,var(--stage-from),var(--stage-to))] px-6 py-8 md:px-10 md:py-12">
+    <Picture
+      src={permissionWindow}
+      formats={['avif', 'webp']}
+      widths={[568, 1136]}
+      sizes="(min-width: 768px) 568px, calc(100vw - 88px)"
+      alt="TesserClip’s “Show your copied text right away” window, with Not Now and Open Privacy & Security buttons"
+      loading="eager"
+      class="h-auto w-full max-w-[568px] rounded-[14px] shadow-[var(--shadow-window)]"
+    />
+  </div>
+  <figcaption class="mt-3 text-center text-sm text-brand-muted">TesserClip shows this window the first time it opens, if it needs your permission.</figcaption>
+</figure>
+
+## Why macOS asks
+
+Your clipboard can hold anything you’ve copied, including passwords and private messages. So macOS lets you decide which apps can read it without you pasting.
+
+Pasting is always up to you. When you press <Kbd keys="⌘V" /> in a TesserClip window, macOS doesn’t ask, and the text appears as usual.
+
+## Allow TesserClip
+
+<HowToSteps>
+  <HowToStep title="Open Privacy & Security">
+    <p>In the TesserClip window that asks for permission, click <strong class="font-semibold text-brand-text">Open Privacy & Security</strong>. If you closed that window, choose <MenuPath items={['Help', 'Clipboard Permission…']} class="whitespace-normal!" /> to open it again.</p>
+  </HowToStep>
+  <HowToStep title="Find TesserClip">
+    <p>System Settings opens to the list of apps that can paste from other apps.</p>
+    <PathChip items={PANE_PATH} />
+  </HowToStep>
+  <HowToStep title="Allow it">
+    <p>Next to TesserClip, choose <strong class="font-semibold text-brand-text">{ALLOW_LABEL}</strong>.</p>
+  </HowToStep>
+  <HowToStep title="Open your text">
+    <p>Switch back to TesserClip and choose <MenuPath items={['File', 'New Window']} /> (<Kbd keys="⌘N" />). The new window shows the text you copied.</p>
+  </HowToStep>
+</HowToSteps>
+
+<NoteCallout><QuestionIcon slot="icon" /><strong class="font-semibold text-brand-text">Chose Not Now?</strong> That’s fine. Windows open empty, and you can paste into them with <Kbd keys="⌘V" />. Change your mind any time with <MenuPath items={['Help', 'Clipboard Permission…']} /></NoteCallout>
+
+## What TesserClip reads
+
+- TesserClip reads the clipboard only when it opens a window.
+- To show the dot on **New Window from Clipboard**, it checks that the clipboard has text, without reading the text.
+- Your text stays on your Mac. See the [Privacy Policy](/privacy/).
+
+## Turn it off
+
+Go back to <MenuPath items={PANE_PATH} class="whitespace-normal!" /> and change TesserClip’s setting. TesserClip keeps working; new windows just open empty.

@@ -1,0 +1,117 @@
+---
+title: TesserClip Help
+description: 'How TesserClip works: getting started, windows and drafts, the editor, keyboard shortcuts and clipboard permission.'
+breadcrumb: Help
+heading: TesserClip Help
+lead: TesserClip opens straight to the text you last copied, so you can fix it before you paste it somewhere else.
+order: 0
+---
+
+{/* /help/ — opened by Help ▸ TesserClip Help (⌘?) in shipped app builds. Never
+    move it, and never rename the section ids (spec §10): getting-started,
+    windows, editor, shortcuts, permission, faq. Copy: .agents/designs/04-help.html. */}
+
+import { SUPPORT_EMAIL } from '../../config';
+import FaqItem from '../../components/FaqItem.astro';
+import HelpHeading from '../../components/HelpHeading.astro';
+import Kbd from '../../components/Kbd.astro';
+import MenuPath from '../../components/MenuPath.astro';
+import NoteCallout from '../../components/NoteCallout.astro';
+import ShortcutTable from '../../components/ShortcutTable.astro';
+import TopicCard from '../../components/TopicCard.astro';
+import ChevronIcon from '../../components/icons/ChevronIcon.astro';
+import ClipboardIcon from '../../components/icons/ClipboardIcon.astro';
+import KeyboardIcon from '../../components/icons/KeyboardIcon.astro';
+import PlayIcon from '../../components/icons/PlayIcon.astro';
+import QuestionIcon from '../../components/icons/QuestionIcon.astro';
+import TextIcon from '../../components/icons/TextIcon.astro';
+import WindowsIcon from '../../components/icons/WindowsIcon.astro';
+
+<div class="mb-2 grid gap-4 md:grid-cols-3">
+  <TopicCard href="#getting-started" title="Getting started" text="Copy, open, fix, paste."><PlayIcon /></TopicCard>
+  <TopicCard href="#shortcuts" title="Keyboard shortcuts" text="Every command, by menu."><KeyboardIcon /></TopicCard>
+  <TopicCard href="/help/clipboard-permission/" title="Clipboard permission" text="Allow TesserClip in Privacy & Security."><ClipboardIcon /></TopicCard>
+</div>
+
+<HelpHeading id="getting-started"><PlayIcon slot="icon" />Getting started</HelpHeading>
+
+1. Copy some text in any app.
+2. Open TesserClip: launch it, click its Dock icon, or switch to it with <Kbd keys="⌘Tab" />. A window shows the text you copied, with the cursor at the end.
+3. Make your changes.
+4. Click **Copy All** in the toolbar, or press <Kbd keys="⇧⌘C" />. You can also select some text and press <Kbd keys="⌘C" />.
+5. Switch back to the other app with <Kbd keys="⌘Tab" />, or hide TesserClip with <Kbd keys="⌘H" />, and paste with <Kbd keys="⌘V" />.
+
+<NoteCallout><ClipboardIcon slot="icon" />The first time you open TesserClip, macOS may need your permission before TesserClip can read the clipboard. <a href="/help/clipboard-permission/" class="text-brand-accent underline decoration-brand-accent/40 underline-offset-[3px] hover:decoration-current">Allow TesserClip to read the clipboard<ChevronIcon /></a></NoteCallout>
+
+<HelpHeading id="windows"><WindowsIcon slot="icon" />Windows and drafts</HelpHeading>
+
+Each TesserClip window is its own draft. It holds the text that was on the clipboard when it opened, and nothing replaces it after that.
+
+<div class="table-scroll">
+
+| When you…                                                  | TesserClip…                                            |
+| ---------------------------------------------------------- | ------------------------------------------------------ |
+| Open TesserClip with no windows open                       | Opens a new window with the text on the clipboard.     |
+| Switch to TesserClip with windows open                     | Brings your windows forward. Your text isn’t replaced. |
+| Choose <MenuPath items={['File', 'New Window']} /> <Kbd keys="⌘N" /> | Opens a new window with the text on the clipboard.     |
+
+</div>
+
+### Window titles
+
+A window’s title is the first few words of its text. Under the title you’ll see where and when the text was copied, like “Safari · Oct 27 at 1:49 PM”. When the window has changes, macOS shows “Edited” next to the title.
+
+### When there’s new text to open
+
+Copy something else while TesserClip is open and a dot appears on the **New Window from Clipboard** button in every window. Click it, or press <Kbd keys="⌘N" />, to open the new text. TesserClip checks that the clipboard has text without reading it.
+
+### Closing and quitting
+
+If you close a window with edits you haven’t copied, TesserClip asks “Discard your edits?” first. Choose **Cancel** (<Kbd keys="esc" />) to keep the window, or **Discard** (<Kbd keys="return" />) to close it. If you’ve copied the text since your last change, the window closes without asking.
+
+Quitting never asks. Your windows, with their text, come back the next time you open TesserClip. Closing the last window leaves TesserClip running; click its Dock icon to open a new window.
+
+<HelpHeading id="editor"><TextIcon slot="icon" />The editor</HelpHeading>
+
+- **Plain text only.** Anything you paste in becomes plain text.
+- **Substitutions are off.** Smart quotes, smart dashes, smart links, data detectors and text replacement are off. Turn any of them on in <MenuPath items={['Edit', 'Substitutions']} />. TesserClip remembers your choices.
+- **Spelling is checked** as you type. Misspelled words are underlined; nothing is changed for you.
+- **The usual Mac text tools work:** Undo and Redo, Find (<Kbd keys="⌘F" />), Transformations, Speech, Services, and dragging text in and out.
+
+If the clipboard doesn’t contain text, such as an image or a file, the window opens empty. Type, paste with <Kbd keys="⌘V" />, or copy some text and choose <MenuPath items={['File', 'New Window']} />.
+
+<HelpHeading id="shortcuts"><KeyboardIcon slot="icon" />Keyboard shortcuts</HelpHeading>
+
+<ShortcutTable />
+
+<HelpHeading id="permission"><ClipboardIcon slot="icon" />Clipboard permission</HelpHeading>
+
+macOS asks before an app reads the clipboard on its own. Allow TesserClip once in Privacy & Security and it can show your copied text right away. Without it, you can still paste into a window with <Kbd keys="⌘V" />.
+
+<p><a href="/help/clipboard-permission/" class="text-[17px] font-medium text-brand-accent hover:underline">Allow TesserClip to read the clipboard<ChevronIcon /></a></p>
+
+<HelpHeading id="faq"><QuestionIcon slot="icon" />Questions</HelpHeading>
+
+<FaqItem question="Why is my new window empty?" open>
+  <p>Either the clipboard doesn’t contain text, or TesserClip doesn’t have permission to read it yet. You can paste with <Kbd keys="⌘V" /> any time. To let TesserClip read the clipboard, see <a href="/help/clipboard-permission/" class="text-brand-accent underline decoration-brand-accent/40 underline-offset-[3px] hover:decoration-current">Clipboard permission</a>.</p>
+</FaqItem>
+<FaqItem question="I copied something new. Why didn’t my window change?">
+  <p>That’s on purpose: a window never replaces the text you’re working on. Click <strong class="font-semibold text-brand-text">New Window from Clipboard</strong> or press <Kbd keys="⌘N" /> to open the new text in its own window.</p>
+</FaqItem>
+<FaqItem question="Does TesserClip keep a clipboard history?">
+  <p>No. TesserClip reads the clipboard only when it opens a window, and only keeps the text of the windows you have open.</p>
+</FaqItem>
+<FaqItem question="Can TesserClip paste into the other app for me?">
+  <p>No. Copy your text with <Kbd keys="⇧⌘C" />, switch back, and paste with <Kbd keys="⌘V" />.</p>
+</FaqItem>
+<FaqItem question="How do I save text to a file?">
+  <p>TesserClip doesn’t save files. Copy the text and paste it into the app where you want to keep it.</p>
+</FaqItem>
+<FaqItem question="Why aren’t my quotes turning curly?">
+  <p>Substitutions are off so your text isn’t changed behind your back. Turn on Smart Quotes in <MenuPath items={['Edit', 'Substitutions']} />. TesserClip remembers the setting.</p>
+</FaqItem>
+
+<div class="mt-12 rounded-2xl border border-brand-border bg-brand-surface p-8 text-center">
+  <h3 class="mb-1.5 text-xl">Still need help?</h3>
+  <p class="text-[15px] leading-normal text-brand-muted">Email <a href={`mailto:${SUPPORT_EMAIL}`} class="text-brand-accent underline decoration-brand-accent/40 underline-offset-[3px] hover:decoration-current">{SUPPORT_EMAIL}</a> or visit <a href="/support/" class="text-brand-accent underline decoration-brand-accent/40 underline-offset-[3px] hover:decoration-current">Support</a>.</p>
+</div>
