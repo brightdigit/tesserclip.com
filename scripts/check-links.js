@@ -22,7 +22,7 @@ const CONFIG_FILE = join(ROOT, 'src', 'config.ts');
 
 // Required besides APP_HELP_PATHS. #6 adds '/downloads/tesserclip-press-kit.zip'
 // once the press kit zip is generated at build time.
-const REQUIRED = ['/', '/privacy', '/support', '/terms', '/press', '/404.html'];
+const REQUIRED = ['/', '/privacy', '/support', '/terms', '/press', '/404.html', '/downloads/tesserclip-press-kit.zip'];
 
 if (!existsSync(DIST)) {
   console.error('check:links — dist/ not found. Run `make build` first.');

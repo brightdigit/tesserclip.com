@@ -5,14 +5,15 @@
   "private": true,
   "scripts": {
     "test": "node --test src/lib/*.test.ts",
-    "prebuild": "npm run test",
+    "prebuild": "npm run test && node scripts/generate-press-kit-zip.js",
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
     "lighthouse": "lhci autorun",
     "check:links": "node scripts/check-links.js",
-    "generate:icons": "node scripts/generate-interim-icons.js"
+    "generate:icons": "node scripts/generate-interim-icons.js",
+    "generate:presskit": "node scripts/generate-press-kit-zip.js"
   },
   "dependencies": {
     "@astrojs/mdx": "8.1.2",
