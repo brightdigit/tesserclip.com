@@ -1,0 +1,21 @@
+---
+// IconTile, an h3 and a paragraph (spec §7). The paragraph is the default
+// slot (it can hold <Kbd> or <MenuPath>); a <Kbd> after the title goes in
+// slot="title-after".
+import IconTile from './IconTile.astro';
+import HomeIcon from './icons/HomeIcon.astro';
+import type { HomeIconName } from './icons/home-icons';
+
+interface Props {
+  icon: HomeIconName;
+  title: string;
+}
+
+const { icon, title } = Astro.props;
+---
+
+<div>
+  <IconTile class="mb-5"><HomeIcon name={icon} /></IconTile>
+  <h3 class="mb-2 text-xl">{title}<slot name="title-after" /></h3>
+  <p class="text-[17px] leading-[1.55] text-brand-muted"><slot /></p>
+</div>
