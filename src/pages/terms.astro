@@ -1,14 +1,22 @@
 ---
-// Stub from the scaffold (#1). Wave 1 replaces the body; keep the title and description (spec §9).
-import BaseLayout from '../layouts/BaseLayout.astro';
+// /terms (spec §9.6). Copy lives in src/content/legal/terms.md.
+import { getEntry } from 'astro:content';
+import { SUPPORT_EMAIL } from '../config';
+import ProseLayout from '../layouts/ProseLayout.astro';
+import { fillTokens } from '../lib/legal';
 
-const title = 'Terms of Use – TesserClip';
-const description = 'The Terms of Use for TesserClip, the Mac app from BrightDigit, LLC.';
+const entry = await getEntry('legal', 'terms');
+if (!entry?.rendered) throw new Error('src/content/legal/terms.md is missing');
+const { title, description, lastUpdated, dateLabel } = entry.data;
+const html = fillTokens(entry.rendered.html, { SUPPORT_EMAIL });
 ---
 
-<BaseLayout title={title} description={description}>
-  <section class="mx-auto max-w-2xl px-5 py-16 md:px-6 md:py-24">
-    <h1 class="text-[34px] font-bold md:text-5xl">Terms of Use</h1>
-    <p class="mt-4 text-lg text-brand-muted md:text-[21px] md:leading-normal">{description}</p>
-  </section>
-</BaseLayout>
+<ProseLayout
+  title={`${title} – TesserClip`}
+  description={description}
+  heading={title}
+  dateLabel={dateLabel}
+  date={lastUpdated}
+>
+  <Fragment set:html={html} />
+</ProseLayout>
