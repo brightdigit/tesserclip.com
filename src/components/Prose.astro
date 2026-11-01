@@ -1,6 +1,7 @@
 ---
 // Typographic styles for content-collection output (spec §7): h2, h3, p,
-// lists, tables, kbd and links. Wrap rendered Markdown/MDX in it:
+// lists, tables and kbd. Links get the shared
+// `text-links` treatment from global.css. Wrap rendered Markdown/MDX in it:
 //   <Prose><Content /></Prose>
 interface Props {
   class?: string;
@@ -9,7 +10,7 @@ interface Props {
 const { class: className } = Astro.props;
 ---
 
-<div class:list={['prose', className]}><slot /></div>
+<div class:list={['prose text-links', className]}><slot /></div>
 
 <style>
   .prose {
@@ -55,12 +56,6 @@ const { class: className } = Astro.props;
   .prose :global(strong) {
     color: var(--color-brand-text);
     font-weight: 600;
-  }
-  .prose :global(a) {
-    color: var(--color-brand-accent);
-  }
-  .prose :global(a:hover) {
-    text-decoration: underline;
   }
   .prose :global(kbd) {
     display: inline-block;

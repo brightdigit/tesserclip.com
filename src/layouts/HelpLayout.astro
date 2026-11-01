@@ -50,12 +50,12 @@ const hasSidebar = Astro.slots.has('sidebar');
       hasSidebar ? (
         <div class="mt-12 grid items-start gap-16 md:grid-cols-[208px_minmax(0,1fr)]">
           <slot name="sidebar" />
-          <article class="help-prose max-w-[720px] min-w-0">
+          <article class="help-prose text-links max-w-[720px] min-w-0">
             <slot />
           </article>
         </div>
       ) : (
-        <article class="help-prose">
+        <article class="help-prose text-links">
           <slot />
         </article>
       )
@@ -130,17 +130,6 @@ const hasSidebar = Astro.slots.has('sidebar');
     :where(.help-prose) :where(strong) {
       color: var(--color-brand-text);
       font-weight: 600;
-    }
-    /* Links in running text are underlined, so colour isn't the only signal
-       (spec §13; Lighthouse link-in-text-block). */
-    :where(.help-prose) :where(a:not([class])) {
-      color: var(--color-brand-accent);
-      text-decoration: underline;
-      text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
-      text-underline-offset: 3px;
-    }
-    :where(.help-prose) :where(a:not([class])):hover {
-      text-decoration-color: currentColor;
     }
     /* Markdown tables (Windows and drafts): full width, and they scroll in
        their own wrapper rather than the page (spec §13). */
