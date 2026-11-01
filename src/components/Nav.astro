@@ -1,0 +1,75 @@
+---
+// Sticky translucent nav (spec §7). The links collapse into a <details> menu
+// below lg; it needs no JS (the CSP is script-src 'self').
+import { APP_NAME } from '../config';
+import AppIcon from './AppIcon.astro';
+import CtaPill from './CtaPill.astro';
+import CloseIcon from './icons/CloseIcon.astro';
+import MenuIcon from './icons/MenuIcon.astro';
+import { NAV_LINKS } from '../data/navigation';
+
+
+const here = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.url.pathname}/`;
+// "page" on the link's own page; "true" on pages inside its section
+// (/help/clipboard-permission/ under Help).
+const current = (href: string) => (here === href ? 'page' : here.startsWith(href) ? 'true' : undefined);
+---
+
+<header
+  class="sticky top-0 z-50 h-16 border-b border-brand-hairline bg-brand-bg/80 backdrop-blur-xl backdrop-saturate-180"
+>
+  <nav aria-label="Main" class="mx-auto flex h-full max-w-5xl items-center justify-between px-5 md:px-6">
+    <a
+      href="/"
+      class="flex items-center gap-2.5 rounded-md text-lg font-semibold tracking-[-0.01em] text-brand-text"
+      aria-current={here === '/' ? 'page' : undefined}
+    >
+      <AppIcon size={30} loading="eager" class="h-[30px] w-[30px]" />
+      {APP_NAME}
+    </a>
+    <div class="flex items-center gap-4 lg:gap-6">
+      <ul class="hidden items-center gap-6 lg:flex">
+        {
+          NAV_LINKS.map((link) => (
+            <li>
+              <a
+                href={link.href}
+                aria-current={current(link.href)}
+                class="rounded-sm text-sm text-brand-muted transition-colors hover:text-brand-text aria-[current]:font-medium aria-[current]:text-brand-text"
+              >
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <CtaPill />
+      <details class="group lg:hidden">
+        <summary
+          aria-label="Menu"
+          class="-mr-2.5 flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-full text-brand-text transition-colors hover:bg-brand-surface [&::-webkit-details-marker]:hidden"
+        >
+          <MenuIcon class="group-open:hidden" />
+          <CloseIcon class="hidden group-open:block" />
+        </summary>
+        <div class="absolute top-full right-0 left-0 border-b border-brand-hairline bg-brand-bg shadow-lg shadow-black/10">
+          <ul class="mx-auto flex max-w-5xl flex-col px-3 py-2">
+            {
+              NAV_LINKS.map((link) => (
+                <li>
+                  <a
+                    href={link.href}
+                    aria-current={current(link.href)}
+                    class="block rounded-lg px-3 py-3 text-base text-brand-muted transition-colors hover:bg-brand-surface hover:text-brand-text aria-[current]:font-medium aria-[current]:text-brand-text"
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </details>
+    </div>
+  </nav>
+</header>

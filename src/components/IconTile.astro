@@ -1,0 +1,19 @@
+---
+// A 44 px rounded, bordered square holding a 24 px stroke icon in the accent
+// colour (spec §7). Put the icon (an inline SVG from ./icons/) in the slot.
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<span
+  class:list={[
+    'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-brand-border bg-brand-elevated text-brand-accent [&>svg]:h-6 [&>svg]:w-6',
+    className,
+  ]}
+  aria-hidden="true"
+>
+  <slot />
+</span>

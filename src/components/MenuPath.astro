@@ -1,0 +1,26 @@
+---
+// A menu path in semibold with ▸ separators: <MenuPath items={['Edit', 'Substitutions']} />
+// renders “Edit ▸ Substitutions”.
+interface Props {
+  items: string[];
+  class?: string;
+}
+
+const { items, class: className } = Astro.props;
+---
+
+<span class:list={['font-semibold whitespace-nowrap text-brand-text', className]}
+  >{
+    items.map((item, i) => (
+      <>
+        {i > 0 && (
+          <>
+            <span aria-hidden="true"> ▸ </span>
+            <span class="sr-only">, </span>
+          </>
+        )}
+        {item}
+      </>
+    ))
+  }</span
+>

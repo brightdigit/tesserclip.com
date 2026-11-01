@@ -1,0 +1,19 @@
+---
+// The main call to action, switched by RELEASE_STATE (spec §8):
+// beta → TestFlightButton, released → AppStoreBadge, comingSoon → nothing.
+import { APP_STORE_ID, RELEASE_STATE } from '../config';
+import AppStoreBadge from './AppStoreBadge.astro';
+import TestFlightButton from './TestFlightButton.astro';
+
+interface Props {
+  /** `hero`: filled TestFlight button, 56 px badge. `footer`: outlined button, 48 px badge. */
+  placement?: 'hero' | 'footer';
+  class?: string;
+}
+
+const { placement = 'hero', class: className } = Astro.props;
+const hero = placement === 'hero';
+---
+
+{RELEASE_STATE === 'beta' && <TestFlightButton variant={hero ? 'filled' : 'outlined'} class={className} />}
+{RELEASE_STATE === 'released' && APP_STORE_ID && <AppStoreBadge height={hero ? 56 : 48} class={className} />}

@@ -1,0 +1,82 @@
+---
+// <head> contents for every page (spec §12): meta, canonical, Open Graph and
+// Twitter, icons, CSP and the Organization JSON-LD. Pages add their own
+// JSON-LD through BaseLayout's "head" slot.
+import { ANALYTICS, APP_NAME, COMPANY_NAME, COMPANY_URL, OG_IMAGE_URL, SITE_URL, SUPPORT_EMAIL, TAGLINE } from '../config';
+import JsonLd from './JsonLd.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  /** noindex pages (the 404) get a robots meta and no canonical. */
+  noindex?: boolean;
+}
+
+const { title, description, noindex = false } = Astro.props;
+
+// Canonical URLs use the trailing-slash form (/help/, /privacy/).
+const path = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.url.pathname}/`;
+const canonicalURL = new URL(path, Astro.site ?? SITE_URL);
+
+const plausible = ANALYTICS.provider === 'plausible' ? ANALYTICS : null;
+const analyticsHost = plausible ? ' https://plausible.io' : '';
+const csp = [
+  `default-src 'self'`,
+  `script-src 'self'${analyticsHost}`,
+  `style-src 'self' 'unsafe-inline'`,
+  `img-src 'self' data:`,
+  `font-src 'self'`,
+  `connect-src 'self'${analyticsHost}`,
+  `object-src 'none'`,
+  `base-uri 'self'`,
+  `form-action 'none'`,
+].join('; ');
+
+const ogImageAlt = `${APP_NAME}: ${TAGLINE.replace(/\.$/, '')}`;
+
+const organization = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: COMPANY_NAME,
+  url: COMPANY_URL,
+  logo: `${SITE_URL}/apple-touch-icon.png`,
+  contactPoint: {
+    '@type': 'ContactPoint',
+    email: SUPPORT_EMAIL,
+    contactType: 'customer support',
+  },
+};
+---
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta http-equiv="Content-Security-Policy" content={csp} />
+<title>{title}</title>
+<meta name="description" content={description} />
+{noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonicalURL.href} />}
+<meta name="color-scheme" content="light dark" />
+
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<link rel="sitemap" href="/sitemap-index.xml" />
+
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:type" content="website" />
+<meta property="og:url" content={canonicalURL.href} />
+<meta property="og:site_name" content={APP_NAME} />
+<meta property="og:image" content={OG_IMAGE_URL} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content={ogImageAlt} />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={OG_IMAGE_URL} />
+<meta name="twitter:image:alt" content={ogImageAlt} />
+
+<JsonLd schema={organization} />
+
+{plausible && <script is:inline defer data-domain={plausible.domain} src="https://plausible.io/js/script.js" />}

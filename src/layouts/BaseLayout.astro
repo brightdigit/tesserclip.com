@@ -1,0 +1,42 @@
+---
+// Every page uses this (spec §9): skip link, Nav, <main id="main">, Footer.
+//
+//   <BaseLayout title="…" description="…">
+//     <JsonLd slot="head" schema={…} />   ← optional extra <head> content
+//     …page body…
+//   </BaseLayout>
+//
+// Other layouts (ProseLayout, HelpLayout) wrap this one.
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import Nav from '../components/Nav.astro';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+  noindex?: boolean;
+}
+
+const { title, description, noindex = false } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <BaseHead title={title} description={description} noindex={noindex} />
+    <slot name="head" />
+  </head>
+  <body class="flex min-h-screen flex-col bg-brand-bg text-brand-text">
+    <a
+      href="#main"
+      class="sr-only rounded-full bg-brand-accent-strong px-4 py-2 text-sm font-medium text-white focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60]"
+      >Skip to content</a
+    >
+    <Nav />
+    <main id="main" class="flex-1">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

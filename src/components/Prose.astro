@@ -1,0 +1,110 @@
+---
+// Typographic styles for content-collection output (spec §7): h2, h3, p,
+// lists, tables, kbd and links. Wrap rendered Markdown/MDX in it:
+//   <Prose><Content /></Prose>
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<div class:list={['prose', className]}><slot /></div>
+
+<style>
+  .prose {
+    font-size: 17px;
+    line-height: 1.65;
+  }
+  @media (min-width: 48rem) {
+    .prose {
+      font-size: 18px;
+    }
+  }
+  .prose :global(h2) {
+    font-size: 28px;
+    margin: 56px 0 14px;
+    letter-spacing: -0.02em;
+  }
+  .prose :global(h3) {
+    font-size: 20px;
+    margin: 32px 0 8px;
+  }
+  .prose :global(p),
+  .prose :global(ul),
+  .prose :global(ol) {
+    margin: 0 0 16px;
+  }
+  .prose :global(ul),
+  .prose :global(ol) {
+    padding-left: 22px;
+  }
+  .prose :global(ul) {
+    list-style: disc;
+  }
+  .prose :global(ol) {
+    list-style: decimal;
+  }
+  .prose :global(li) {
+    margin: 6px 0;
+  }
+  .prose :global(p),
+  .prose :global(li) {
+    color: color-mix(in srgb, var(--color-brand-text) 82%, var(--color-brand-muted));
+  }
+  .prose :global(strong) {
+    color: var(--color-brand-text);
+    font-weight: 600;
+  }
+  .prose :global(a) {
+    color: var(--color-brand-accent);
+  }
+  .prose :global(a:hover) {
+    text-decoration: underline;
+  }
+  .prose :global(kbd) {
+    display: inline-block;
+    min-width: 1.9em;
+    padding: 0.08em 0.45em;
+    border: 1px solid var(--color-brand-border);
+    border-bottom-width: 2px;
+    border-radius: 6px;
+    background: var(--color-brand-elevated);
+    color: var(--color-brand-text);
+    font-family: var(--font-sans);
+    font-size: 0.82em;
+    font-weight: 500;
+    line-height: 1.45;
+    letter-spacing: 0.04em;
+    text-align: center;
+    white-space: nowrap;
+  }
+  /* Tables scroll inside their own container if they must (spec §13). */
+  .prose :global(table) {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 8px 0 24px;
+    font-size: 16px;
+    border: 1px solid var(--color-brand-border);
+    border-radius: 14px;
+  }
+  .prose :global(th),
+  .prose :global(td) {
+    padding: 12px 18px;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--color-brand-hairline);
+  }
+  .prose :global(tr:last-child td) {
+    border-bottom: 0;
+  }
+  .prose :global(thead th) {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-brand-muted);
+    background: var(--color-brand-surface);
+  }
+</style>
