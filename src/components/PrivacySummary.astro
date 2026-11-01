@@ -1,0 +1,30 @@
+---
+// The three tinted privacy points at the top of /privacy (spec §7, §9.4):
+// Your text stays on your Mac · No account · No tracking. Icons are copied
+// from the design HTML.
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<ul
+  class:list={[
+    'mt-8 mb-2 grid gap-3.5 rounded-2xl border border-brand-tint-2 bg-brand-tint px-6 py-6 text-[17px] text-brand-text md:px-7',
+    className,
+  ]}
+>
+  <li class="flex items-start gap-3">
+    <svg class="mt-0.5 h-6 w-6 shrink-0 text-brand-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10.5" rx="2.2"></rect><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"></path></svg>
+    <span><strong class="font-semibold">Your text stays on your Mac.</strong> TesserClip doesn’t send it anywhere.</span>
+  </li>
+  <li class="flex items-start gap-3">
+    <svg class="mt-0.5 h-6 w-6 shrink-0 text-brand-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.6"></circle><path d="M5 20a7 7 0 0 1 14 0"></path><path d="M4 4l16 16"></path></svg>
+    <span><strong class="font-semibold">No account.</strong> There’s nothing to sign up for.</span>
+  </li>
+  <li class="flex items-start gap-3">
+    <svg class="mt-0.5 h-6 w-6 shrink-0 text-brand-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"></path><circle cx="12" cy="12" r="2.6"></circle><path d="M4 4l16 16"></path></svg>
+    <span><strong class="font-semibold">No tracking.</strong> No analytics, ads or third‑party SDKs in the app.</span>
+  </li>
+</ul>

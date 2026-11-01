@@ -1,0 +1,66 @@
+---
+// A long-form text page (spec §6, §9): BaseLayout with a max-w-2xl column, an
+// h1, an optional date line, and the slot rendered inside Prose.
+//
+//   <ProseLayout title="…" description="…" heading="Privacy Policy"
+//                dateLabel="Last updated" date={entry.data.lastUpdated}>
+//     <PrivacySummary slot="intro" />     ← optional, between the header and the prose
+//     <Content />
+//   </ProseLayout>
+//
+// Any page with a header and prose can use it; it knows nothing about the
+// legal collection.
+import Prose from '../components/Prose.astro';
+import { formatLegalDate } from '../lib/legal';
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+  /** The <title>. */
+  title: string;
+  description: string;
+  /** The visible h1. */
+  heading: string;
+  /** Shown before the date, e.g. “Last updated” or “Effective”. */
+  dateLabel?: string;
+  date?: Date;
+  noindex?: boolean;
+}
+
+const { title, description, heading, dateLabel, date, noindex = false } = Astro.props;
+---
+
+<BaseLayout title={title} description={description} noindex={noindex}>
+  <slot name="head" slot="head" />
+  <article class="mx-auto max-w-2xl px-5 pt-[72px] pb-24 md:px-6">
+    <header class="pb-2">
+      <h1 class="text-[34px] leading-[1.08] font-bold tracking-[-0.028em] md:text-5xl">{heading}</h1>
+      {
+        date && (
+          <p class="mt-3 text-[15px] text-brand-muted">
+            {dateLabel ? `${dateLabel} ` : ''}
+            <time datetime={date.toISOString().slice(0, 10)}>{formatLegalDate(date)}</time>
+          </p>
+        )
+      }
+    </header>
+    <slot name="intro" />
+    <Prose class="prose-page">
+      <slot />
+    </Prose>
+  </article>
+</BaseLayout>
+
+<style>
+  /* A menu path written inline in Markdown: <span class="menu-path">Edit ▸ Substitutions</span>. */
+  .prose-page :global(.menu-path) {
+    color: var(--color-brand-text);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  /* Legal fine print (the warranty and liability paragraphs). */
+  .prose-page :global(.caps) {
+    font-size: 14px;
+    line-height: 1.6;
+    letter-spacing: 0.01em;
+  }
+</style>
