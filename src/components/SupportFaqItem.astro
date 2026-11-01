@@ -1,0 +1,49 @@
+---
+// The support page’s FaqItem (spec §7): a <details> with a +/− marker. Named
+// Support… so it doesn’t collide with #3’s FaqItem; the QA issue dedupes. The answer goes in
+// the default slot.
+//
+//   <SupportFaqItem question="Why is my new window empty?" open><p>…</p></SupportFaqItem>
+interface Props {
+  question: string;
+  open?: boolean;
+  class?: string;
+}
+
+const { question, open = false, class: className } = Astro.props;
+---
+
+<details class:list={['faq my-3 rounded-2xl border border-brand-border bg-brand-surface', className]} open={open}>
+  <summary class="flex cursor-pointer list-none justify-between gap-4 px-[22px] py-[18px] text-[17px] leading-[1.4] font-medium text-brand-text">
+    {question}
+  </summary>
+  <div class="answer px-[22px] pb-5 text-base leading-[1.6] text-brand-muted">
+    <slot />
+  </div>
+</details>
+
+<style>
+  summary::-webkit-details-marker {
+    display: none;
+  }
+  summary::after {
+    content: '+';
+    flex: none;
+    color: var(--color-brand-muted);
+    font-size: 22px;
+    line-height: 1;
+    font-weight: 300;
+  }
+  details[open] > summary::after {
+    content: '\2212';
+  }
+  /* Links in running text are underlined (Lighthouse link-in-text-block). */
+  .answer :global(a) {
+    color: var(--color-brand-accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .answer :global(p + p) {
+    margin-top: 10px;
+  }
+</style>
