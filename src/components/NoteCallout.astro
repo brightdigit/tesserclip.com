@@ -1,0 +1,9 @@
+---
+// A surface box with an icon, for tips and “Chose Not Now?” (spec §7). Put
+// the icon in the "icon" slot and the text in the default slot.
+---
+
+<div class="my-6 flex gap-3.5 rounded-[14px] border border-brand-border bg-brand-surface px-5 py-4.5 text-base leading-[1.55]">
+  <span class="mt-px shrink-0 text-brand-accent [&>svg]:h-[22px] [&>svg]:w-[22px]"><slot name="icon" /></span>
+  <p class="text-brand-text/85"><slot /></p>
+</div>

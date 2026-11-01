@@ -1,0 +1,34 @@
+---
+// “TesserClip › Help › …” (spec §7). The last crumb is the current page and
+// isn’t a link.
+import type { Crumb } from '../lib/breadcrumbs';
+
+interface Props {
+  crumbs: readonly Crumb[];
+}
+
+const { crumbs } = Astro.props;
+---
+
+<nav aria-label="Breadcrumb" class="mb-4 text-sm text-brand-muted">
+  <ol class="flex flex-wrap items-center">
+    {
+      crumbs.map((crumb, i) => (
+        <li class="flex items-center">
+          {i > 0 && (
+            <span class="mx-1.5 opacity-60" aria-hidden="true">
+              ›
+            </span>
+          )}
+          {i < crumbs.length - 1 ? (
+            <a href={crumb.path} class="rounded-sm text-brand-muted hover:text-brand-text hover:underline">
+              {crumb.name}
+            </a>
+          ) : (
+            <span aria-current="page">{crumb.name}</span>
+          )}
+        </li>
+      ))
+    }
+  </ol>
+</nav>

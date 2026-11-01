@@ -1,0 +1,45 @@
+---
+// The help index’s sticky “On this page” sidebar (spec §7): anchor links, a
+// rule, then secondary links. Hidden below md.
+import type { NavLink } from '../data/navigation';
+
+interface Props {
+  anchors: readonly NavLink[];
+  links?: readonly NavLink[];
+}
+
+const { anchors, links = [] } = Astro.props;
+const linkClass =
+  'block -ml-3 rounded-lg px-3 py-1.5 text-brand-muted transition-colors hover:bg-brand-surface hover:text-brand-text';
+---
+
+<nav aria-labelledby="on-this-page" class="sticky top-24 hidden text-sm md:block">
+  <h2 id="on-this-page" class="mb-3 text-xs font-semibold tracking-[0.06em] text-brand-muted uppercase">On this page</h2>
+  <ul>
+    {
+      anchors.map((link) => (
+        <li>
+          <a href={link.href} class={linkClass}>
+            {link.label}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+  {
+    links.length > 0 && (
+      <>
+        <div class="my-3.5 h-px bg-brand-hairline" />
+        <ul>
+          {links.map((link) => (
+            <li>
+              <a href={link.href} class={linkClass}>
+                {link.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </>
+    )
+  }
+</nav>

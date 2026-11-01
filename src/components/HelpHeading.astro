@@ -1,0 +1,16 @@
+---
+// A help section heading: an IconTile next to an h2 carrying the section’s
+// stable anchor id (spec §10.1). Put the icon in the slot.
+import IconTile from './IconTile.astro';
+
+interface Props {
+  id: string;
+}
+
+const { id } = Astro.props;
+---
+
+<div class="mt-18 mb-5 flex items-center gap-4">
+  <IconTile><slot name="icon" /></IconTile>
+  <h2 id={id} class="text-3xl tracking-[-0.022em] text-brand-text"><slot /></h2>
+</div>
