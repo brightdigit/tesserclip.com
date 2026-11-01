@@ -1,0 +1,25 @@
+---
+// A press description card (spec §7). The “Copy” button is progressive
+// enhancement: it starts `hidden`, and /scripts/copy-card.js (a 'self'
+// script, so it passes the CSP) reveals it when the Clipboard API exists.
+// Without JS the text stays selectable and no button shows.
+interface Props {
+  title: string;
+  text: string;
+}
+
+const { title, text } = Astro.props;
+---
+
+<div class="relative rounded-2xl border border-brand-border bg-brand-elevated px-[22px] py-5 text-base leading-[1.6] text-brand-muted" data-copy-card>
+  <button
+    type="button"
+    hidden
+    data-copy-button
+    aria-label={`Copy the ${title.toLowerCase()} description`}
+    class="absolute top-4 right-4 cursor-pointer rounded-lg border border-brand-border bg-brand-surface px-2.5 py-0.5 text-[13px] font-medium text-brand-text hover:border-brand-accent"
+  >Copy</button>
+  <h3 class="mb-2 text-[15px] text-brand-text">{title}</h3>
+  <p data-copy-text>{text}</p>
+  <span class="sr-only" aria-live="polite" data-copy-status></span>
+</div>

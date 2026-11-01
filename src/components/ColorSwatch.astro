@@ -1,0 +1,22 @@
+---
+// A brand colour swatch: the chip, the name and the hex value (spec §7).
+interface Props {
+  name: string;
+  hex: string;
+  use: string;
+}
+
+const { name, hex, use } = Astro.props;
+---
+
+<div class="flex items-center gap-3.5 rounded-[14px] border border-brand-border bg-brand-elevated p-3">
+  <span
+    class="h-[52px] w-[52px] flex-none rounded-[10px] shadow-[inset_0_0_0_1px_rgb(127_127_127/0.25)]"
+    style={`background-color:${hex}`}
+    aria-hidden="true"
+  ></span>
+  <span>
+    <span class="block text-[15px] font-semibold">{name}</span>
+    <span class="font-mono text-[13px] text-brand-muted">{hex} · {use}</span>
+  </span>
+</div>

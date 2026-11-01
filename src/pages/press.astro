@@ -1,14 +1,165 @@
 ---
-// Stub from the scaffold (#1). Wave 1 replaces the body; keep the title and description (spec §9).
+// /press (spec §9.7, §11). The copy and facts come from src/data/press.json,
+// which the build-time zip's README.txt also reads (via src/lib/press.ts), so
+// the page and the zip can't drift. Status and Distribution follow §8.
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
+import AppIcon from '../components/AppIcon.astro';
+import BrightDigitLogo from '../components/BrightDigitLogo.astro';
+import ColorSwatch from '../components/ColorSwatch.astro';
+import CopyCard from '../components/CopyCard.astro';
+import PressDownloadIcon from '../components/icons/PressDownloadIcon.astro';
+import { COMPANY_NAME, COMPANY_URL, FOUNDER_NAME, PRESS_EMAIL, RELEASE_STATE, VERSION_LABEL } from '../config';
+import press from '../data/press.json';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { pressFacts } from '../lib/press';
 
 const title = 'Press Kit – TesserClip';
 const description = 'TesserClip press kit: app description, icon, screenshots, fact sheet, brand colours and contact.';
+
+const facts = pressFacts(press, RELEASE_STATE, VERSION_LABEL);
+
+// Thumbnails are optimised from src/assets/screens; each links to the
+// original PNG in public/press/screenshots (the same files the zip holds).
+const screens = import.meta.glob<{ default: ImageMetadata }>('../assets/screens/*.png', { eager: true });
+const screenshots = press.screenshots.map((shot) => {
+  const image = screens[`../assets/screens/${shot.file}`]?.default;
+  if (!image) throw new Error(`press.json: no src/assets/screens/${shot.file}`);
+  return { ...shot, image };
+});
+
+const section = 'border-t border-brand-hairline py-16 md:py-[72px]';
+const wrap = 'mx-auto max-w-5xl px-5 md:px-6';
+const h2 = 'mb-7 text-[30px]';
 ---
 
 <BaseLayout title={title} description={description}>
-  <section class="mx-auto max-w-2xl px-5 py-16 md:px-6 md:py-24">
-    <h1 class="text-[34px] font-bold md:text-5xl">Press Kit</h1>
-    <p class="mt-4 text-lg text-brand-muted md:text-[21px] md:leading-normal">{description}</p>
+  <section class="pt-12 pb-16 text-center md:pt-20 md:pb-[72px]">
+    <div class={wrap}>
+      <AppIcon size={112} loading="eager" fetchpriority="high" class="mx-auto mb-6" />
+      <h1 class="text-[34px] leading-[1.08] font-bold tracking-[-0.028em] md:text-5xl">Press Kit</h1>
+      <p class="mx-auto mt-3.5 mb-8 max-w-[600px] text-lg leading-normal text-brand-muted md:text-[21px]">{press.lead}</p>
+      <a
+        href="/downloads/tesserclip-press-kit.zip"
+        download
+        class="inline-flex items-center gap-2 rounded-full bg-brand-accent-strong px-[22px] py-[11px] text-[17px] font-medium text-white hover:no-underline hover:brightness-110"
+      >
+        <PressDownloadIcon />Download Press Kit (.zip)
+      </a>
+    </div>
   </section>
+
+  <section class:list={[section, 'bg-brand-surface']} aria-labelledby="press-description">
+    <div class={wrap}>
+      <h2 id="press-description" class={h2}>App description</h2>
+      <div class="grid gap-5 md:grid-cols-2">
+        <CopyCard title="Short" text={press.descriptions.short} />
+        <CopyCard title="Long" text={press.descriptions.long} />
+      </div>
+    </div>
+  </section>
+
+  <section class={section} aria-labelledby="press-icon">
+    <div class={wrap}>
+      <h2 id="press-icon" class={h2}>App icon</h2>
+      <div class="flex flex-wrap gap-8 md:gap-14">
+        {
+          press.icons.map((icon) => (
+            <figure class="m-0 text-center">
+              <a href={`/press/icons/${icon.png}`} class="block rounded-[36px]" aria-label={`${icon.alt}, 1024 px PNG`}>
+                <img src={`/press/icons/${icon.svg}`} alt={icon.alt} width="160" height="160" loading="lazy" decoding="async" class="h-36 w-36 md:h-40 md:w-40" />
+              </a>
+              <figcaption class="mt-3 text-[15px] font-medium">
+                {icon.name}
+                <small class="mt-0.5 block text-[13px] font-normal text-brand-muted">{press.iconLabel}</small>
+              </figcaption>
+            </figure>
+          ))
+        }
+      </div>
+      <p class="mt-6 text-[15px] text-brand-muted">{press.iconNote}</p>
+    </div>
+  </section>
+
+  <section class={section} aria-labelledby="press-screenshots">
+    <div class={wrap}>
+      <h2 id="press-screenshots" class={h2}>Screenshots</h2>
+      <div class="grid gap-5 md:grid-cols-4">
+        {
+          screenshots.map((shot) => (
+            <figure class="m-0">
+              <a href={`/press/screenshots/${shot.file}`} class="block rounded-[10px]" aria-label={`${shot.caption}, full-size PNG`}>
+                <Image
+                  src={shot.image}
+                  alt=""
+                  widths={[460, 720, 920]}
+                  sizes="(min-width: 768px) 230px, calc(100vw - 40px)"
+                  loading="lazy"
+                  class="h-auto w-full rounded-[10px] border border-brand-border"
+                />
+              </a>
+              <figcaption class="mt-2 text-center text-[13px] text-brand-muted">{shot.caption}</figcaption>
+            </figure>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class:list={[section, 'bg-brand-surface']}>
+    <div class:list={[wrap, 'grid items-start gap-8 md:grid-cols-2 md:gap-16']}>
+      <div>
+        <h2 class={h2}>Fact sheet</h2>
+        <dl class="max-w-[560px] overflow-hidden rounded-2xl border border-brand-border bg-brand-elevated">
+          {
+            facts.map((fact) => (
+              <div class="flex border-b border-brand-hairline px-[22px] py-3 text-base last:border-b-0">
+                <dt class="w-[120px] flex-none font-semibold md:w-[150px]">{fact.label}</dt>
+                <dd class="m-0 text-brand-muted">
+                  {fact.href ? <a href={fact.href} class="text-brand-accent hover:underline">{fact.value}</a> : fact.value}
+                </dd>
+              </div>
+            ))
+          }
+        </dl>
+      </div>
+      <div>
+        <h2 class={h2}>Brand colors</h2>
+        <div class="grid gap-4">
+          {press.colors.map((color) => <ColorSwatch name={color.name} hex={color.hex} use={color.use} />)}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class={section} aria-labelledby="press-developer">
+    <div class="mx-auto max-w-[820px] px-5 md:px-6">
+      <h2 id="press-developer" class={h2}>About the developer</h2>
+      <p class="text-[17px] text-brand-muted">
+        TesserClip is made by <strong class="font-semibold text-brand-text">{COMPANY_NAME}</strong>, an independent software studio
+        founded by <strong class="font-semibold text-brand-text">{FOUNDER_NAME}</strong> that builds native apps for Apple platforms.
+        Leo has run BrightDigit since 2012, hosts <a href="https://empowerapps.show" class="text-brand-accent underline decoration-brand-accent/40 underline-offset-2 hover:decoration-brand-accent"
+          >EmpowerApps.show</a
+        >, and is an active open source contributor in the Swift community.
+      </p>
+      <p class="mt-7">
+        <a href={COMPANY_URL} class="inline-flex text-brand-text hover:opacity-80">
+          <BrightDigitLogo class="h-7 w-auto" />
+        </a>
+      </p>
+    </div>
+  </section>
+
+  <section class:list={[section, 'bg-brand-surface']} aria-labelledby="press-contact">
+    <div class={wrap}>
+      <h2 id="press-contact" class={h2}>Contact</h2>
+      <p class="text-[17px] text-brand-muted">
+        For press questions, review copies or interviews, email <a href={`mailto:${PRESS_EMAIL}`} class="text-brand-accent underline decoration-brand-accent/40 underline-offset-2 hover:decoration-brand-accent"
+          >{PRESS_EMAIL}</a
+        >.
+      </p>
+    </div>
+  </section>
+
+  <script is:inline src="/scripts/copy-card.js" defer></script>
 </BaseLayout>
