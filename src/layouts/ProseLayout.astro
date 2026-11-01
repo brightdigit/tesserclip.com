@@ -44,13 +44,22 @@ const { title, description, heading, dateLabel, date, noindex = false } = Astro.
       }
     </header>
     <slot name="intro" />
-    <Prose class="prose-page">
-      <slot />
-    </Prose>
+    <div class="prose-page">
+      <Prose>
+        <slot />
+      </Prose>
+    </div>
   </article>
 </BaseLayout>
 
 <style>
+  /* Links inside running text need more than colour to stand out (WCAG 1.4.1). */
+  .prose-page :global(p a),
+  .prose-page :global(li a) {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.18em;
+  }
   /* A menu path written inline in Markdown: <span class="menu-path">Edit ▸ Substitutions</span>. */
   .prose-page :global(.menu-path) {
     color: var(--color-brand-text);
