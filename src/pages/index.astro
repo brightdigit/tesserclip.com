@@ -1,0 +1,20 @@
+---
+// Stub from the scaffold (#1). #2 replaces the body; keep the title and description (spec §9.1).
+import AppIcon from '../components/AppIcon.astro';
+import PrimaryCta from '../components/PrimaryCta.astro';
+import { APP_NAME, TAGLINE } from '../config';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const title = 'TesserClip: Fix copied text before you paste it';
+const description =
+  'TesserClip opens straight to the text you last copied, in a plain-text editor, so you can fix it before you paste it. For macOS 27.';
+---
+
+<BaseLayout title={title} description={description}>
+  <section class="mx-auto max-w-6xl px-5 py-16 text-center md:px-6 md:py-24">
+    <AppIcon size={120} loading="eager" class="mx-auto mb-5 h-28 w-28 md:h-[120px] md:w-[120px]" />
+    <h1 class="text-5xl font-bold tracking-[-0.03em] md:text-7xl">{APP_NAME}</h1>
+    <p class="mt-3 text-2xl font-semibold md:text-[32px]">{TAGLINE}</p>
+    <div class="mt-9 flex justify-center"><PrimaryCta /></div>
+  </section>
+</BaseLayout>
