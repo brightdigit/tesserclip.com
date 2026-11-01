@@ -1,0 +1,72 @@
+{
+  "lead": "Everything you need to write about TesserClip: the icon, screenshots, a fact sheet and how to reach us.",
+  "descriptions": {
+    "short": "TesserClip opens straight to the text you last copied, in a plain‑text editor, so you can fix it before you paste it.",
+    "long": "Copy some text, open TesserClip, and it’s already there, ready to edit. Each window is its own draft, rich text becomes plain text, and Copy All (⇧⌘C) puts the whole window back on the clipboard. TesserClip asks before closing a window with uncopied edits, and your text never leaves your Mac."
+  },
+  "facts": {
+    "appName": "TesserClip",
+    "developer": "BrightDigit",
+    "platform": "macOS",
+    "minimumOS": "macOS 27",
+    "category": "Productivity",
+    "website": "https://tesserclip.com"
+  },
+  "icons": [
+    {
+      "name": "Default",
+      "svg": "app-icon.svg",
+      "png": "app-icon-1024.png",
+      "alt": "TesserClip icon, default appearance"
+    },
+    {
+      "name": "Dark",
+      "svg": "app-icon-dark.svg",
+      "png": "app-icon-dark-1024.png",
+      "alt": "TesserClip icon, dark appearance"
+    }
+  ],
+  "iconLabel": "1024 · PNG · WebP",
+  "iconNote": "Final artwork will be exported from Icon Composer, including the Clear and Tinted appearances.",
+  "iconGuidelines": [
+    "Use the provided app icon files without modification.",
+    "Keep the original aspect ratio.",
+    "Don’t change the icon’s colours, add effects or distort it.",
+    "Leave enough clear space around the icon."
+  ],
+  "screenshots": [
+    {
+      "file": "01-editor.png",
+      "caption": "Copied text, ready to edit"
+    },
+    {
+      "file": "04-discard-alert.png",
+      "caption": "Asks before losing edits"
+    },
+    {
+      "file": "03-empty.png",
+      "caption": "When the clipboard has no text"
+    },
+    {
+      "file": "06-permission.png",
+      "caption": "Clipboard permission"
+    }
+  ],
+  "colors": [
+    {
+      "name": "TesserClip Purple",
+      "hex": "#4A1D7A",
+      "use": "icon base, light accent"
+    },
+    {
+      "name": "Lavender",
+      "hex": "#9B6BD8",
+      "use": "dark‑mode accent"
+    },
+    {
+      "name": "Night",
+      "hex": "#06030D",
+      "use": "icon dark gradient stop"
+    }
+  ]
+}
