@@ -1,25 +1,49 @@
 ---
 // An IconTile, a title and a line, linking to a page or an anchor (spec §7).
-// Put the icon in the slot. The title is an h2 by default, so a row of cards
-// right under the page’s h1 doesn’t skip a heading level.
+// Used on /help and /support. Put the icon in the slot. The title is an h2 by
+// default, so a row of cards right under the page’s h1 doesn’t skip a heading
+// level. `action` adds the accent “Write to us ›” line; `external` opens the
+// link in a new tab and says so to screen readers.
+//
+//   <TopicCard href="/help/" title="TesserClip Help" text="How windows…">
+//     <BookIcon />
+//   </TopicCard>
+import ChevronIcon from './icons/ChevronIcon.astro';
 import IconTile from './IconTile.astro';
+import NewTabNote from './NewTabNote.astro';
 
 interface Props {
   href: string;
   title: string;
   text: string;
   headingLevel?: 2 | 3;
+  action?: string;
+  external?: boolean;
+  class?: string;
 }
 
-const { href, title, text, headingLevel = 2 } = Astro.props;
+const { href, title, text, headingLevel = 2, action, external = false, class: className } = Astro.props;
 const Heading = `h${headingLevel}` as 'h2' | 'h3';
 ---
 
 <a
   href={href}
-  class="block rounded-2xl border border-brand-border bg-brand-surface p-6 text-inherit transition-colors hover:border-brand-accent"
+  class:list={[
+    'block rounded-2xl border border-brand-border bg-brand-surface p-6 text-inherit transition-colors hover:border-brand-accent',
+    className,
+  ]}
+  {...external ? { target: '_blank', rel: 'noopener noreferrer' } : {}}
 >
   <IconTile class="mb-3.5"><slot /></IconTile>
   <Heading class="mb-1 text-[17px] text-brand-text">{title}</Heading>
   <p class="text-[15px] leading-normal text-brand-muted">{text}</p>
+  {
+    action && (
+      <span class="mt-3 inline-block text-[15px] font-medium text-brand-accent">
+        {action}
+        <ChevronIcon class="ml-0.5" />
+      </span>
+    )
+  }
+  {external && <NewTabNote />}
 </a>
