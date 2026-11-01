@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TesserClip: Fix copied text before you paste it</title>
+<style>
+/* A3 Unfold. Round 2 exploration. A glass case (the icon's sheets as a box) unfolds into the page.
+   Light presentation, after developer.apple.com/design. Type: system stack only (SF Pro on Apple platforms).
+   Labels: ui-monospace (SF Mono) first, self-hosted IBM Plex Mono only as a non-Apple fallback. */
+@font-face{font-family:"Plex Mono Fallback";src:url("../assets/fonts/ibm-plex-mono-latin-400-normal.woff2") format("woff2");font-weight:400;font-display:swap}
+@property --f{syntax:"<number>";inherits:true;initial-value:0}
+:root{
+  --bg:#EEEBF3;            /* Apple-design grey with a lilac cast */
+  --bg-2:#F8F7FB;
+  --card:#FFFFFF;
+  --ink:#19132A;           /* 15.3:1 on --bg */
+  --ink-2:#463F55;         /* 8.5:1 on --bg, 10.0:1 on white */
+  --ink-3:#5F5870;         /* 5.7:1 on --bg, 6.7:1 on white */
+  --accent:#4A1D7A;        /* 10.2:1 on --bg */
+  --violet:#7C4DBF;
+  --line:rgba(25,19,42,.10);
+  --hinge:rgba(74,29,122,.45);
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Inter,system-ui,sans-serif;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,"Plex Mono Fallback",monospace;
+  /* iridescent glass rim, like the Liquid Glass shapes on developer.apple.com/design */
+  --rim:conic-gradient(from 210deg,#fff,#D9C4F5,#A9D8FF,#FFD3EE,#fff,#C9A8FF,#fff);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+main{overflow-x:clip}
+a{color:inherit}
+img{display:block;max-width:100%;height:auto}
+kbd{font-family:var(--font);font-size:.82em;font-weight:500;display:inline-block;padding:1px 7px;border-radius:6px;background:#fff;border:1px solid rgba(25,19,42,.16);border-bottom-width:2px;line-height:1.5;white-space:nowrap;color:var(--ink)}
+.mono{font-family:var(--mono);font-size:12px;letter-spacing:.05em;color:var(--ink-3)}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+
+/* Nav: functional layer, so it gets the glass */
+.nav{position:sticky;top:0;z-index:30;background:rgba(248,247,251,.72);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;height:52px}
+.brand{display:flex;align-items:center;gap:9px;font-weight:600;font-size:17px;text-decoration:none}
+.brand img{width:26px;height:26px}
+.nav-right{display:flex;align-items:center;gap:26px}
+.nav-links{display:flex;gap:24px;font-size:13px;color:var(--ink-2)}
+.nav-links a{text-decoration:none}
+.pill{font-size:13px;font-weight:600;padding:5px 14px;border-radius:999px;background:var(--accent);color:#fff;text-decoration:none}
+.menu-btn{display:none;width:24px;height:24px}
+
+/* ---------- The unfolding box ----------
+   A cuboid net. --f is the fold: 0 = flat net, 1 = closed case. Every flap hinges on a real edge,
+   so one custom property drives the whole thing, and @property lets CSS animate it. */
+.box{--W:300px;--H:196px;--D:110px;position:relative;width:var(--W);height:var(--H);transform-style:preserve-3d}
+.box *{transform-style:preserve-3d}
+.pane{position:absolute;border-radius:14px;border:1.5px solid transparent;
+  background:linear-gradient(150deg,rgba(255,255,255,.78),rgba(244,238,252,.42) 60%,rgba(226,212,247,.38)) padding-box,var(--rim) border-box;
+  box-shadow:inset 0 1px 0 #fff,0 18px 40px -18px rgba(74,29,122,.35)}
+.base{inset:0}
+.flap-t{left:0;bottom:100%;width:var(--W);height:var(--D);transform-origin:50% 100%;transform:rotateX(calc(var(--f) * -90deg))}
+.flap-b{left:0;top:100%;width:var(--W);height:var(--D);transform-origin:50% 0;transform:rotateX(calc(var(--f) * 90deg))}
+.flap-l{right:100%;top:0;width:var(--D);height:var(--H);transform-origin:100% 50%;transform:rotateY(calc(var(--f) * 90deg))}
+.flap-r{left:100%;top:0;width:var(--D);height:var(--H);transform-origin:0 50%;transform:rotateY(calc(var(--f) * -90deg))}
+.lid{left:-1.5px;top:100%;width:var(--W);height:var(--H);transform-origin:50% 0;transform:rotateX(calc(var(--f) * 90deg))}
+.pane .glyph{position:absolute;inset:0;display:grid;place-items:center;color:var(--accent)}
+.pane .glyph svg{width:34px;height:34px;opacity:.85}
+/* the lid is the icon's front sheet: clipboard tab and three lines */
+.lid .tab{position:absolute;left:50%;bottom:-14px;width:84px;height:28px;margin-left:-42px;border-radius:9px;background:linear-gradient(#fff,#F1E9FB);border:1px solid rgba(124,77,191,.35)}
+.lid .lines{position:absolute;left:24%;right:30%;top:36%;height:40%;
+  background:linear-gradient(var(--violet),var(--violet)) 0 0/100% 9px no-repeat,linear-gradient(var(--violet),var(--violet)) 0 50%/78% 9px no-repeat,linear-gradient(var(--violet),var(--violet)) 0 100%/58% 9px no-repeat;opacity:.55;border-radius:4px}
+.base.shot{background:#fff padding-box,var(--rim) border-box;overflow:hidden}
+.base.shot img{position:absolute;inset:-2% -1% auto;width:102%}
+
+/* Hero */
+.hero{padding:72px 0 40px;position:relative;overflow:hidden;
+  background:radial-gradient(760px 520px at 76% 46%,rgba(201,168,255,.45),transparent 70%),radial-gradient(600px 400px at 90% 90%,rgba(169,216,255,.35),transparent 70%)}
+.hero .wrap{display:grid;grid-template-columns:1fr 1.05fr;gap:24px;align-items:center}
+.hero-guides{position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(circle at 74% 50%,transparent 179px,rgba(74,29,122,.10) 180px,transparent 181px),radial-gradient(circle at 74% 50%,transparent 299px,rgba(74,29,122,.08) 300px,transparent 301px),
+  linear-gradient(90deg,transparent calc(74% - .5px),rgba(74,29,122,.08) calc(74% - .5px),rgba(74,29,122,.08) calc(74% + .5px),transparent calc(74% + .5px))}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--accent);padding:6px 13px;border-radius:999px;background:rgba(255,255,255,.7);border:1px solid rgba(74,29,122,.15)}
+.eyebrow i{width:7px;height:7px;border-radius:50%;background:var(--violet)}
+.hero-icon{width:84px;height:84px;margin:26px 0 0}
+.h-name{font-size:84px;line-height:1;font-weight:700;letter-spacing:-.035em;margin:14px 0 0}
+.tagline{font-size:30px;line-height:1.18;font-weight:600;letter-spacing:-.02em;color:var(--accent);margin:12px 0 0}
+.lead{font-size:20px;color:var(--ink-2);margin:18px 0 0;max-width:500px}
+.cta-row{display:flex;gap:14px;align-items:center;margin-top:30px;flex-wrap:wrap}
+.tf-btn{display:inline-flex;align-items:center;gap:10px;background:var(--accent);color:#fff;border-radius:999px;padding:10px 24px 10px 14px;text-decoration:none;font-weight:600;font-size:17px;box-shadow:0 10px 30px -8px rgba(74,29,122,.55)}
+.tf-btn svg{width:28px;height:28px}
+.link{color:var(--accent);font-weight:500;text-decoration:none}
+.req{font-size:14px;color:var(--ink-3);margin:16px 0 0}
+.hero-stage{position:relative;height:620px;perspective:1600px;perspective-origin:50% 0}
+.hero-stage .view{position:absolute;left:50%;top:52%;transform-style:preserve-3d;transform:translate(-50%,-50%) rotateX(50deg) rotateZ(-26deg)}
+.hero-stage .box{--W:330px;--H:216px;--D:122px;--f:.3;animation:unfold 14s ease-in-out infinite}
+.shadow{position:absolute;left:-30%;top:-40%;width:160%;height:180%;border-radius:50%;background:radial-gradient(closest-side,rgba(74,29,122,.22),transparent);transform:translateZ(-1px)}
+.hero-stage .tag{position:absolute;font-family:var(--mono);font-size:12px;color:var(--ink-3);letter-spacing:.05em;background:rgba(255,255,255,.75);border:1px solid rgba(74,29,122,.14);padding:5px 10px;border-radius:8px}
+.hero-stage .tag b{color:var(--accent);font-weight:400}
+.tag-f{right:18px;top:40px}
+.tag-w{left:6px;bottom:70px}
+@keyframes unfold{0%,8%{--f:1}46%,58%{--f:0}100%{--f:1}}
+
+/* Frozen frames strip */
+.frames{padding:40px 0 30px}
+.frames .row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;align-items:end;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:26px 0 18px;position:relative}
+.frame{display:flex;flex-direction:column;align-items:center;gap:6px}
+.frame .mini{height:176px;width:100%;perspective:900px;perspective-origin:50% 0;position:relative}
+.frame .mini .view{position:absolute;left:50%;top:56%;transform-style:preserve-3d;transform:translate(-50%,-50%) rotateX(52deg) rotateZ(-26deg)}
+.frame .box{--W:70px;--H:46px;--D:27px}
+.frame .pane{border-radius:5px;border-width:1px;box-shadow:inset 0 1px 0 #fff,0 6px 12px -6px rgba(74,29,122,.35)}
+.frame .lid .tab{width:20px;height:7px;bottom:-4px;margin-left:-13px;border-radius:3px}
+.frame .lid .lines{background:linear-gradient(var(--violet),var(--violet)) 0 0/100% 3px no-repeat,linear-gradient(var(--violet),var(--violet)) 0 50%/78% 3px no-repeat,linear-gradient(var(--violet),var(--violet)) 0 100%/58% 3px no-repeat}
+.frame .base.shot img{inset:0;width:100%}
+
+/* Sections */
+.sec{padding:110px 0}
+.white{background:var(--bg-2)}
+.kicker{font-family:var(--mono);font-size:13px;color:var(--accent);letter-spacing:.05em;margin:0 0 12px}
+.h-sec{font-size:52px;line-height:1.06;font-weight:700;letter-spacing:-.03em;margin:0}
+.sec-lead{font-size:20px;color:var(--ink-2);margin:16px 0 0;max-width:620px}
+
+/* Features on the flat net (fold 0): a cross of six faces */
+.net{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:auto auto auto;margin-top:8px;position:relative}
+.cell{min-height:262px}
+.face{position:relative;padding:26px 24px 24px;border:1.5px solid transparent;
+  background:linear-gradient(160deg,rgba(255,255,255,.96),rgba(250,247,254,.9)) padding-box,var(--rim) border-box;
+  box-shadow:0 1px 0 rgba(255,255,255,.9) inset}
+.face h3{font-size:20px;line-height:1.25;margin:14px 0 8px;letter-spacing:-.015em;font-weight:600}
+.face p{margin:0;color:var(--ink-2);font-size:15.5px;line-height:1.55}
+.face .ic{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(160deg,#F3ECFC,#E4D6F6);color:var(--accent)}
+.face .ic svg{width:22px;height:22px}
+.face .no{position:absolute;right:16px;top:16px;font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+.face .menu-path{font-weight:600;color:var(--ink);white-space:nowrap}
+/* hinge (fold) lines between faces, like a paper net */
+.hinge-r::after,.hinge-b::before{content:"";position:absolute;pointer-events:none}
+.hinge-r::after{right:-1px;top:10px;bottom:10px;border-right:1.5px dashed var(--hinge);z-index:2}
+.hinge-b::before{left:10px;right:10px;bottom:-1px;border-bottom:1.5px dashed var(--hinge);z-index:2}
+.c-top{grid-column:2;grid-row:1;border-radius:22px 22px 0 0}
+.c-left{grid-column:1;grid-row:2;border-radius:22px 0 0 22px}
+.c-front{grid-column:2;grid-row:2;background:linear-gradient(160deg,#fff,#F6F0FD) padding-box,var(--rim) border-box;box-shadow:0 30px 60px -30px rgba(74,29,122,.45)}
+.c-right{grid-column:3;grid-row:2}
+.c-back{grid-column:4;grid-row:2;border-radius:0 22px 22px 0}
+.c-bottom{grid-column:2;grid-row:3;border-radius:0 0 22px 22px}
+.net-head{grid-column:3 / span 2;grid-row:1;padding:6px 0 30px 36px;align-self:end}
+.net-note{grid-column:3 / span 2;grid-row:3;padding:30px 0 0 36px}
+.net-note p{margin:0;color:var(--ink-2);font-size:16px;max-width:420px}
+.net-note .legend{display:flex;gap:18px;margin-top:14px;font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.net-note .legend span{display:inline-flex;align-items:center;gap:8px}
+.net-note .legend i{width:26px;border-top:1.5px dashed var(--hinge)}
+.net-corner{grid-column:1;grid-row:1;align-self:end;padding:0 24px 18px 0}
+.net-corner .mono{display:block;text-align:right}
+.glue{position:absolute;background:rgba(124,77,191,.07);border:1.5px dashed rgba(124,77,191,.3)}
+.glue.g-top{left:18px;right:18px;top:-18px;height:18px;border-bottom:0;border-radius:10px 10px 0 0;clip-path:polygon(6% 0,94% 0,100% 100%,0 100%)}
+
+/* Safe edits: a lid closing over the window */
+.split{display:grid;grid-template-columns:1fr 1.1fr;gap:64px;align-items:center}
+.split h2{font-size:46px;line-height:1.08;font-weight:700;letter-spacing:-.03em;margin:0}
+.split p{color:var(--ink-2);font-size:19px;margin:16px 0 0}
+.split .kicker{font-size:13px;color:var(--accent);margin:0 0 12px}
+.list{list-style:none;padding:0;margin:24px 0 0;display:grid;gap:14px}
+.list li{display:flex;gap:12px;color:var(--ink-2)}
+.list svg{width:22px;height:22px;flex:none;color:var(--accent);margin-top:2px}
+.case{position:relative;height:480px;perspective:1500px;perspective-origin:50% 0;overflow:hidden}
+.case .view{position:absolute;left:50%;top:58%;transform-style:preserve-3d;transform:translate(-50%,-50%) rotateX(46deg) rotateZ(-8deg)}
+.case .box{--W:440px;--H:288px;--D:70px;--f:.62}
+.case .base.shot img{inset:0;width:100%}
+.case .alert-pop{position:absolute;left:50%;top:40px;width:250px;margin-left:-125px;text-align:center;padding:16px 16px 14px;border-radius:16px;background:rgba(246,245,249,.97);box-shadow:0 0 0 1px rgba(0,0,0,.07),0 20px 40px rgba(74,29,122,.25);font-size:12px;color:#1D1D1F;z-index:3}
+.alert-pop strong{display:block;font-size:13.5px;margin:6px 0 3px}
+.alert-pop .btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.alert-pop .btns span{padding:4px 0;border-radius:999px;background:#E9E9EE;border:1px solid #CFCFD6}
+.alert-pop .btns .def{background:#0A62D6;color:#fff;border-color:#0A62D6}
+.alert-pop .ai{width:30px;height:30px;margin:0 auto;border-radius:8px;display:grid;place-items:center;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.12);color:#0A62D6}
+.alert-pop .ai svg{width:18px;height:18px}
+
+/* How it works: four frames of the fold */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:56px}
+.step{background:var(--card);border-radius:24px;padding:0 22px 24px;border:1px solid var(--line);overflow:hidden}
+.step .mini{height:170px;perspective:900px;perspective-origin:50% 0;position:relative;margin:0 -22px 4px;background:linear-gradient(180deg,#F4EFFB,#fff)}
+.step .mini .view{position:absolute;left:50%;top:58%;transform-style:preserve-3d;transform:translate(-50%,-50%) rotateX(52deg) rotateZ(-26deg)}
+.step .box{--W:96px;--H:63px;--D:36px}
+.step .pane{border-radius:6px;border-width:1px;box-shadow:inset 0 1px 0 #fff,0 6px 12px -6px rgba(74,29,122,.35)}
+.step .lid .tab{width:30px;height:10px;bottom:-5px;margin-left:-15px;border-radius:3px}
+.step .lid .lines{background:linear-gradient(var(--violet),var(--violet)) 0 0/100% 3px no-repeat,linear-gradient(var(--violet),var(--violet)) 0 50%/78% 3px no-repeat,linear-gradient(var(--violet),var(--violet)) 0 100%/58% 3px no-repeat}
+.step .base.shot img{inset:0;width:100%}
+.step .mono{display:block;margin-top:14px}
+.step h3{font-size:20px;margin:4px 0 6px;letter-spacing:-.015em}
+.step p{margin:0;color:var(--ink-2);font-size:15.5px}
+.keys{display:flex;gap:6px;margin-top:14px}
+
+/* Privacy: the case, closed */
+.priv-card{background:var(--card);border-radius:32px;padding:64px;display:grid;grid-template-columns:1fr 340px;gap:40px;align-items:center;border:1px solid var(--line);
+  background-image:radial-gradient(420px 320px at 85% 50%,rgba(201,168,255,.32),transparent 70%)}
+.priv-card .mini{height:300px;perspective:1100px;perspective-origin:50% 0;position:relative}
+.priv-card .mini .view{position:absolute;left:50%;top:60%;transform-style:preserve-3d;transform:translate(-50%,-50%) rotateX(52deg) rotateZ(-26deg)}
+.priv-card .box{--W:200px;--H:131px;--D:74px;--f:1}
+.priv-card .pane{border-radius:10px}
+.priv-card .lid .tab{width:56px;height:18px;bottom:-9px;margin-left:-28px;border-radius:6px}
+.priv{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:34px}
+.priv .ic{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(160deg,#F3ECFC,#E4D6F6);color:var(--accent)}
+.priv .ic svg{width:22px;height:22px}
+.priv h3{font-size:17px;margin:12px 0 4px}
+.priv p{margin:0;color:var(--ink-2);font-size:15px}
+.reqline{display:flex;justify-content:center;gap:36px;margin-top:36px;font-size:14px;color:var(--ink-2);flex-wrap:wrap}
+.reqline span{display:inline-flex;align-items:center;gap:8px}
+.reqline svg{width:18px;height:18px;color:var(--accent)}
+
+footer{padding:96px 0 56px;text-align:center;border-top:1px solid var(--line);background:linear-gradient(180deg,var(--bg-2),var(--bg))}
+.f-icon{width:96px;height:96px;margin:0 auto}
+.f-big{font-size:56px;line-height:1.05;font-weight:700;letter-spacing:-.035em;margin:24px 0 28px}
+.by{display:inline-flex;align-items:center;gap:8px;color:var(--ink-3);font-size:13px;text-decoration:none;margin-top:40px}
+.by svg{height:22px;width:auto;color:var(--ink-2)}
+footer nav{display:flex;justify-content:center;gap:26px;flex-wrap:wrap;margin-top:20px;font-size:13px;color:var(--ink-2)}
+footer nav a{text-decoration:none}
+.copy{font-size:12px;color:var(--ink-3);margin:22px 0 0}
+
+@media (prefers-reduced-motion:reduce){.hero-stage .box{animation:none}}
+
+@media (max-width:820px){
+  .nav-links{display:none}.menu-btn{display:block}.nav-right{gap:16px}
+  .hero{padding:40px 0 10px}
+  .hero .wrap{grid-template-columns:1fr;gap:0}
+  .hero-guides{display:none}
+  .h-name{font-size:54px}
+  .tagline{font-size:25px}
+  .lead{font-size:18px}
+  .hero-stage{height:400px;margin:0 -24px}
+  .hero-stage .view{scale:.6}
+  .tag-f{right:12px;top:16px}.tag-w{left:12px;bottom:24px}
+  .frames .row{grid-template-columns:repeat(3,1fr);gap:0}
+  .frame:nth-child(2),.frame:nth-child(4){display:none}
+  .frame .mini{height:110px}
+  .frame .mini .view{scale:.62}
+  .frame .mono{font-size:10.5px;text-align:center}
+  .hero-stage .view{left:46%}
+  .sec{padding:72px 0}
+  .h-sec{font-size:36px}
+  .sec-lead{font-size:18px}
+  .net{display:flex;flex-direction:column;gap:0;margin-top:0}
+  .net-head{padding:0 0 28px}
+  .net-corner{display:none}
+  .cell{min-height:0}
+  .face,.c-top,.c-left,.c-front,.c-right,.c-back,.c-bottom{border-radius:0}
+  .net .face:first-of-type{border-radius:22px 22px 0 0}
+  .c-bottom{border-radius:0 0 22px 22px}
+  .face{order:1}
+  .hinge-r::after{display:none}
+  .face::before{content:"";position:absolute;left:10px;right:10px;bottom:-1px;border-bottom:1.5px dashed var(--hinge);z-index:2}
+  .c-bottom::before{display:none}
+  .net-note{order:2;padding:24px 0 0}
+  .glue{display:none}
+  .split{grid-template-columns:1fr;gap:10px}
+  .split h2{font-size:34px}
+  .case{height:330px}
+  .case .view{scale:.56;left:48%}
+  .case .alert-pop{top:14px;width:210px;margin-left:-105px;padding:12px}
+  .steps{grid-template-columns:1fr 1fr;gap:12px;margin-top:36px}
+  .step{padding:0 16px 18px}
+  .step .mini{height:120px;margin:0 -16px 4px}
+  .step .mini .view{scale:.75}
+  .step h3{font-size:18px}
+  .step p{font-size:14.5px}
+  .priv-card{grid-template-columns:1fr;padding:32px 22px;gap:0}
+  .priv-card .mini{order:-1;height:200px}
+  .priv-card .mini .view{scale:.7}
+  .priv{grid-template-columns:1fr;gap:20px}
+  .reqline{flex-direction:column;align-items:center;gap:12px}
+  .f-big{font-size:40px}
+}
+</style>
+</head>
+<body data-state="beta">
+
+<div class="nav"><div class="wrap">
+  <a class="brand" href="#"><img src="../assets/icons/icon-default-384.png" alt="" width="26" height="26">TesserClip</a>
+  <div class="nav-right">
+    <div class="nav-links"><a href="#">Help</a><a href="#">Press</a><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Support</a></div>
+    <a class="pill" href="#testflight-url">Join Beta</a>
+    <span class="menu-btn" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span>
+  </div>
+</div></div>
+
+<main>
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero-guides" aria-hidden="true"></div>
+  <div class="wrap">
+    <div>
+      <span class="eyebrow"><i></i>Now in beta on TestFlight</span>
+      <img class="hero-icon" src="../assets/icons/icon-default-384.png" alt="TesserClip app icon" width="84" height="84">
+      <h1 id="hero-title" class="h-name">TesserClip</h1>
+      <p class="tagline">Fix copied text before you paste it.</p>
+      <p class="lead">TesserClip opens straight to whatever you last copied, in a plain‑text editor. Edit it, copy it, and paste it where it belongs.</p>
+      <div class="cta-row">
+        <a class="tf-btn" href="#testflight-url"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52" width="30" height="30" fill="currentColor" aria-hidden="true"> <path d="M52,26C52,11.727,40.438,0.108,26.189,0.005C26.173,0.005,26.157,0,26.141,0h-0.281c-0.017,0-0.032,0.005-0.049,0.005C11.561,0.108,0,11.727,0,26c0,4.635,1.225,8.987,3.36,12.76c0.02,0.038,0.031,0.079,0.053,0.117l0.141,0.245c0.021,0.037,0.05,0.066,0.073,0.102C8.16,46.864,16.49,52,26,52c9.51,0,17.84-5.135,22.373-12.776c0.023-0.037,0.053-0.066,0.075-0.104l0.139-0.242c0.021-0.037,0.032-0.077,0.052-0.114C50.774,34.99,52,30.637,52,26z M50,26c0,3.095-0.595,6.051-1.667,8.77c-0.333-0.435-0.755-0.804-1.264-1.066h0l-16.131-8.317c-0.17-1.372-0.887-2.566-1.938-3.361l0.863-18.123c0.027-0.576-0.084-1.128-0.298-1.636C41.114,3.994,50,13.978,50,26z M46.644,38.22c-0.244,0.366-0.597,0.626-1.016,0.727c-0.457,0.111-0.933,0.028-1.341-0.234l-14.481-9.307l1.046-1.813l15.299,7.888c0,0,0,0,0,0c0.434,0.224,0.746,0.595,0.878,1.043c0.12,0.41,0.071,0.845-0.126,1.243C46.819,37.919,46.733,38.071,46.644,38.22z M7.712,38.712c-0.411,0.265-0.889,0.35-1.342,0.238c-0.417-0.1-0.771-0.363-1.016-0.732c-0.089-0.15-0.175-0.301-0.261-0.453c-0.193-0.394-0.242-0.829-0.121-1.24c0.132-0.451,0.443-0.821,0.875-1.044l15.299-7.888l1.046,1.813L7.712,38.712z M23,26c0-1.654,1.346-3,3-3s3,1.346,3,3s-1.346,3-3,3S23,27.654,23,26z M24.954,21L24.135,3.807c-0.023-0.488,0.142-0.943,0.465-1.282c0.311-0.326,0.74-0.507,1.209-0.52C25.873,2.004,25.936,2,26,2c0.064,0,0.127,0.004,0.19,0.005c0.467,0.013,0.895,0.194,1.208,0.523c0.324,0.34,0.49,0.794,0.467,1.279L27.046,21H24.954z M22.432,2.266c-0.213,0.508-0.323,1.059-0.295,1.635c0,0.001,0,0.001,0,0.001L23,22.026c-1.051,0.796-1.768,1.99-1.938,3.361L4.931,33.704c-0.51,0.263-0.931,0.632-1.263,1.069C2.596,32.053,2,29.096,2,26C2,13.979,10.885,3.995,22.432,2.266z M26,50c-7.578,0-14.342-3.534-18.744-9.036c0.537-0.072,1.06-0.262,1.537-0.568v-0.001l15.246-9.797C24.642,30.855,25.304,31,26,31s1.358-0.145,1.961-0.403l15.246,9.797c0.477,0.307,1,0.495,1.539,0.567C40.344,46.465,33.579,50,26,50z"/> </svg>Join the beta on TestFlight</a>
+        <a class="link" href="#how">How it works ›</a>
+      </div>
+      <p class="req">Coming soon to the Mac App Store. Requires macOS 27 or later.</p>
+    </div>
+    <div class="hero-stage" role="img" aria-label="A glass case unfolding to reveal a TesserClip window with copied release notes">
+      <div class="view" aria-hidden="true">
+        <div class="shadow"></div>
+        <div class="box">
+          <div class="pane base shot"><img src="../../assets/screens/01-editor-window.png" alt="" width="330"></div>
+          <div class="pane flap-t"><span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2.5"/><rect x="9" y="2.5" width="6" height="3.2" rx="1.2"/><path d="M8.5 11h7M8.5 14.5h4.5"/></svg></span></div>
+          <div class="pane flap-l"><span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6.5h9M8.5 6.5V18M14.5 11h6M17.5 11v7"/></svg></span></div>
+          <div class="pane flap-r"><span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8.5" y="8.5" width="11.5" height="12.5" rx="2"/><path d="M15.5 8.5V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9.5a2 2 0 0 0 2 2h2.5"/></svg></span></div>
+          <div class="pane flap-b"><span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5 19 6v5.5c0 4.2-3 7.6-7 9-4-1.4-7-4.8-7-9V6l7-2.5Z"/><path d="M12 8.5v4.2"/><circle cx="12" cy="15.8" r=".6" fill="currentColor"/></svg></span>
+            <div class="pane lid"><span class="tab"></span><span class="lines"></span></div>
+          </div>
+        </div>
+      </div>
+      <span class="tag tag-f"><b>--fold</b> 0.30</span>
+      <span class="tag tag-w">the window inside</span>
+    </div>
+  </div>
+</section>
+
+<div class="frames" aria-hidden="true"><div class="wrap"><div class="row">
+  <div class="frame"><div class="mini"><div class="view"><div class="box" style="--f:1"><div class="pane base shot"><img src="../../assets/screens/01-editor-window.png" alt=""></div><div class="pane flap-t"></div><div class="pane flap-l"></div><div class="pane flap-r"></div><div class="pane flap-b"><div class="pane lid"><span class="tab"></span><span class="lines"></span></div></div></div></div></div><span class="mono">fold 1.00 · copied</span></div>
+  <div class="frame"><div class="mini"><div class="view"><div class="box" style="--f:.75"><div class="pane base shot"><img src="../../assets/screens/01-editor-window.png" alt=""></div><div class="pane flap-t"></div><div class="pane flap-l"></div><div class="pane flap-r"></div><div class="pane flap-b"><div class="pane lid"><span class="tab"></span><span class="lines"></span></div></div></div></div></div><span class="mono">0.75 · open</span></div>
+  <div class="frame"><div class="mini"><div class="view"><div class="box" style="--f:.5"><div class="pane base shot"><img src="../../assets/screens/01-editor-window.png" alt=""></div><div class="pane flap-t"></div><div class="pane flap-l"></div><div class="pane flap-r"></div><div class="pane flap-b"><div class="pane lid"><span class="tab"></span><span class="lines"></span></div></div></div></div></div><span class="mono">0.50 · unfold</span></div>
+  <div class="frame"><div class="mini"><div class="view"><div class="box" style="--f:.25"><div class="pane base shot"><img src="../../assets/screens/01-editor-window.png" alt=""></div><div class="pane flap-t"></div><div class="pane flap-l"></div><div class="pane flap-r"></div><div class="pane flap-b"><div class="pane lid"><span class="tab"></span><span class="lines"></span></div></div></div></div></div><span class="mono">0.25 · edit</span></div>
+  <div class="frame"><div class="mini"><div class="view"><div class="box" style="--f:0"><div class="pane base shot"><img src="../../assets/screens/01-editor-window.png" alt=""></div><div class="pane flap-t"></div><div class="pane flap-l"></div><div class="pane flap-r"></div><div class="pane flap-b"><div class="pane lid"><span class="tab"></span><span class="lines"></span></div></div></div></div></div><span class="mono">0.00 · flat</span></div>
+</div></div></div>
+
+<section class="sec" id="features" aria-labelledby="features-title" style="padding-top:70px"><div class="wrap">
+  <div class="net">
+    <div class="net-corner"><span class="mono">net · 6 faces</span></div>
+    <div class="cell face c-top hinge-b"><span class="glue g-top"></span><span class="no">1</span><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2.5"/><rect x="9" y="2.5" width="6" height="3.2" rx="1.2"/><path d="M8.5 11h7M8.5 14.5h4.5"/></svg></div><h3>Opens to your last copy</h3><p>Open TesserClip and the text you just copied is already in a window, with the cursor at the end, ready to fix.</p></div>
+    <div class="net-head"><p class="kicker">unfolded</p><h2 id="features-title" class="h-sec">Made for the moment between copy and paste.</h2></div>
+    <div class="cell face c-left hinge-r"><span class="no">2</span><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="13" height="12" rx="2"/><path d="M7.5 8V6a2 2 0 0 1 2-2H19a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-3"/><path d="M3 11.5h13"/></svg></div><h3>Every window is its own draft</h3><p>Each window keeps the text it opened with. Copying something new never replaces it. Open the new text in another window with <kbd>⌘N</kbd>.</p></div>
+    <div class="cell face c-front hinge-r hinge-b"><span class="no">3</span><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6.5h9M8.5 6.5V18M14.5 11h6M17.5 11v7"/></svg></div><h3>A plain‑text editor</h3><p>Rich text arrives as plain text. Smart quotes, dashes and other substitutions stay off until you turn them on in <span class="menu-path">Edit ▸ Substitutions</span>.</p></div>
+    <div class="cell face c-right hinge-r"><span class="no">4</span><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8.5" y="8.5" width="11.5" height="12.5" rx="2"/><path d="M15.5 8.5V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9.5a2 2 0 0 0 2 2h2.5"/></svg></div><h3>Copy All <kbd>⇧⌘C</kbd></h3><p>Copy the whole window from the toolbar or the Edit menu in one step. Your selection and cursor stay where they were.</p></div>
+    <div class="cell face c-back"><span class="no">5</span><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5 19 6v5.5c0 4.2-3 7.6-7 9-4-1.4-7-4.8-7-9V6l7-2.5Z"/><path d="M12 8.5v4.2"/><circle cx="12" cy="15.8" r=".6" fill="currentColor"/></svg></div><h3>Asks before losing edits</h3><p>Close a window with edits you haven’t copied and TesserClip asks first. If you’ve already copied them, it just closes.</p></div>
+    <div class="cell face c-bottom"><span class="no">6</span><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="12.5" height="16" rx="2.5"/><path d="M7.5 11.5h5.5M7.5 15h3.5"/><circle cx="18.2" cy="5.8" r="3.3" fill="currentColor" stroke="none"/></svg></div><h3>Knows when there’s new text</h3><p>A dot on New Window from Clipboard tells you there’s something new. TesserClip checks that it’s text without reading what it says.</p></div>
+    <div class="net-note"><p>TesserClip gives the text you just copied a clean place to be fixed. There are no files to save and no settings to learn.</p><div class="legend"><span><i></i>fold</span><span>6 faces · 1 window</span></div></div>
+  </div>
+</div></section>
+
+<section class="sec white" aria-labelledby="safe-title"><div class="wrap">
+  <div class="split">
+    <div>
+      <p class="kicker">closing</p>
+      <h2 id="safe-title">Your edits are safe until they’re copied.</h2>
+      <p>Close a window you’ve changed and TesserClip checks with you first. Cancel is one <kbd>esc</kbd> away, and nothing skips the question.</p>
+      <ul class="list">
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3"/><path d="M4.5 4.5v4h4"/></svg><span>Quit with <kbd>⌘Q</kbd> any time. Your windows and their text come back next time.</span></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8.5" y="8.5" width="11.5" height="12.5" rx="2"/><path d="M15.5 8.5V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9.5a2 2 0 0 0 2 2h2.5"/></svg><span>Already copied your edits? The window closes without asking.</span></li>
+      </ul>
+    </div>
+    <div class="case" role="img" aria-label="The Discard your edits? sheet, with Cancel and Discard buttons, above an edited TesserClip window sitting in a glass tray">
+      <div class="alert-pop" aria-hidden="true"><div class="ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2.5"/><rect x="9" y="2.5" width="6" height="3.2" rx="1.2"/><path d="M8.5 11h7M8.5 14.5h4.5"/></svg></div><strong>Discard your edits?</strong>The changes in this window haven’t been copied. Closing it can’t be undone.<div class="btns"><span>Cancel</span><span class="def">Discard</span></div></div>
+      <div class="view" aria-hidden="true">
+        <div class="shadow"></div>
+        <div class="box">
+          <div class="pane base shot"><img src="../../assets/screens/01-editor-window.png" alt="" width="440"></div>
+          <div class="pane flap-t"></div><div class="pane flap-l"></div><div class="pane flap-r"></div>
+          <div class="pane flap-b"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+<section class="sec" id="how" aria-labelledby="how-title"><div class="wrap">
+  <p class="kicker">four frames</p>
+  <h2 id="how-title" class="h-sec">How it works</h2>
+  <p class="sec-lead">No more pasting into TextEdit just to fix a typo.</p>
+  <div class="steps">
+    <div class="step"><div class="mini" aria-hidden="true"><div class="view"><div class="box" style="--f:1"><div class="pane base shot"><img src="../../assets/screens/01-editor-window.png" alt=""></div><div class="pane flap-t"></div><div class="pane flap-l"></div><div class="pane flap-r"></div><div class="pane flap-b"><div class="pane lid"><span class="tab"></span><span class="lines"></span></div></div></div></div></div><span class="mono">fold 1.00</span><h3>Copy</h3><p>Copy text in any app, the way you always do.</p><div class="keys"><kbd>⌘C</kbd></div></div>
+    <div class="step"><div class="mini" aria-hidden="true"><div class="view"><div class="box" style="--f:.6"><div class="pane base shot"><img src="../../assets/screens/01-editor-window.png" alt=""></div><div class="pane flap-t"></div><div class="pane flap-l"></div><div class="pane flap-r"></div><div class="pane flap-b"><div class="pane lid"><span class="tab"></span><span class="lines"></span></div></div></div></div></div><span class="mono">fold 0.60</span><h3>Open TesserClip</h3><p>Click it in the Dock or switch to it. Your text is waiting.</p><div class="keys"><kbd>⌘Tab</kbd></div></div>
+    <div class="step"><div class="mini" aria-hidden="true"><div class="view"><div class="box" style="--f:0"><div class="pane base shot"><img src="../../assets/screens/01-editor-window.png" alt=""></div><div class="pane flap-t"></div><div class="pane flap-l"></div><div class="pane flap-r"></div><div class="pane flap-b"><div class="pane lid"><span class="tab"></span><span class="lines"></span></div></div></div></div></div><span class="mono">fold 0.00</span><h3>Fix it</h3><p>Edit in plain text, with Undo, Find and spelling built in.</p><div class="keys"><kbd>⌘Z</kbd><kbd>⌘F</kbd></div></div>
+    <div class="step"><div class="mini" aria-hidden="true"><div class="view"><div class="box" style="--f:.85"><div class="pane base shot"><img src="../../assets/screens/01-editor-window.png" alt=""></div><div class="pane flap-t"></div><div class="pane flap-l"></div><div class="pane flap-r"></div><div class="pane flap-b"><div class="pane lid"><span class="tab"></span><span class="lines"></span></div></div></div></div></div><span class="mono">fold 0.85</span><h3>Copy it back</h3><p>Copy the whole window, switch back, and paste.</p><div class="keys"><kbd>⇧⌘C</kbd><kbd>⌘V</kbd></div></div>
+  </div>
+</div></section>
+
+<section class="sec" aria-labelledby="privacy-title" style="padding-top:10px"><div class="wrap">
+  <div class="priv-card">
+    <div>
+      <p class="kicker">closed</p>
+      <h2 id="privacy-title" class="h-sec" style="font-size:46px">Your text stays on your Mac.</h2>
+      <p class="sec-lead" style="font-size:18px">TesserClip reads the clipboard only when it opens a window. Drafts are saved in the app’s own container on your Mac, so your windows come back after you quit.</p>
+      <div class="priv">
+        <div><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10.5" rx="2.2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg></span><h3>Nothing leaves your Mac</h3><p>Your text isn’t sent to BrightDigit or anyone else.</p></div>
+        <div><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M5 20a7 7 0 0 1 14 0"/><path d="M4 4l16 16"/></svg></span><h3>No account</h3><p>There’s nothing to sign up for or sign in to.</p></div>
+        <div><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.6"/><path d="M4 4l16 16"/></svg></span><h3>No tracking</h3><p>No analytics or ads in the app. <a href="#">Privacy Policy</a></p></div>
+      </div>
+    </div>
+    <div class="mini" aria-hidden="true"><div class="view"><div class="shadow"></div><div class="box"><div class="pane base shot"><img src="../../assets/screens/01-editor-window.png" alt=""></div><div class="pane flap-t"></div><div class="pane flap-l"></div><div class="pane flap-r"></div><div class="pane flap-b"><div class="pane lid"><span class="tab"></span><span class="lines"></span></div></div></div></div></div>
+  </div>
+  <div class="reqline">
+    <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="5" width="15" height="10.5" rx="1.6"/><path d="M2.5 19h19"/></svg>Requires macOS 27 or later</span>
+    <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19.5h14"/></svg>Coming soon to the Mac App Store</span>
+    <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6.5C10 5 7 4.5 4 5v13c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5V5c-3-.5-6 0-8 1.5Z"/><path d="M12 6.5V19"/></svg><a href="#">Read the TesserClip Help ›</a></span>
+  </div>
+</div></section>
+</main>
+
+<footer><div class="wrap">
+  <img class="f-icon" src="../assets/icons/icon-default-384.png" alt="TesserClip app icon" width="96" height="96">
+  <p class="f-big">Copy. Fix. Paste.</p>
+  <a class="tf-btn" href="#testflight-url"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52" width="30" height="30" fill="currentColor" aria-hidden="true"> <path d="M52,26C52,11.727,40.438,0.108,26.189,0.005C26.173,0.005,26.157,0,26.141,0h-0.281c-0.017,0-0.032,0.005-0.049,0.005C11.561,0.108,0,11.727,0,26c0,4.635,1.225,8.987,3.36,12.76c0.02,0.038,0.031,0.079,0.053,0.117l0.141,0.245c0.021,0.037,0.05,0.066,0.073,0.102C8.16,46.864,16.49,52,26,52c9.51,0,17.84-5.135,22.373-12.776c0.023-0.037,0.053-0.066,0.075-0.104l0.139-0.242c0.021-0.037,0.032-0.077,0.052-0.114C50.774,34.99,52,30.637,52,26z M50,26c0,3.095-0.595,6.051-1.667,8.77c-0.333-0.435-0.755-0.804-1.264-1.066h0l-16.131-8.317c-0.17-1.372-0.887-2.566-1.938-3.361l0.863-18.123c0.027-0.576-0.084-1.128-0.298-1.636C41.114,3.994,50,13.978,50,26z M46.644,38.22c-0.244,0.366-0.597,0.626-1.016,0.727c-0.457,0.111-0.933,0.028-1.341-0.234l-14.481-9.307l1.046-1.813l15.299,7.888c0,0,0,0,0,0c0.434,0.224,0.746,0.595,0.878,1.043c0.12,0.41,0.071,0.845-0.126,1.243C46.819,37.919,46.733,38.071,46.644,38.22z M7.712,38.712c-0.411,0.265-0.889,0.35-1.342,0.238c-0.417-0.1-0.771-0.363-1.016-0.732c-0.089-0.15-0.175-0.301-0.261-0.453c-0.193-0.394-0.242-0.829-0.121-1.24c0.132-0.451,0.443-0.821,0.875-1.044l15.299-7.888l1.046,1.813L7.712,38.712z M23,26c0-1.654,1.346-3,3-3s3,1.346,3,3s-1.346,3-3,3S23,27.654,23,26z M24.954,21L24.135,3.807c-0.023-0.488,0.142-0.943,0.465-1.282c0.311-0.326,0.74-0.507,1.209-0.52C25.873,2.004,25.936,2,26,2c0.064,0,0.127,0.004,0.19,0.005c0.467,0.013,0.895,0.194,1.208,0.523c0.324,0.34,0.49,0.794,0.467,1.279L27.046,21H24.954z M22.432,2.266c-0.213,0.508-0.323,1.059-0.295,1.635c0,0.001,0,0.001,0,0.001L23,22.026c-1.051,0.796-1.768,1.99-1.938,3.361L4.931,33.704c-0.51,0.263-0.931,0.632-1.263,1.069C2.596,32.053,2,29.096,2,26C2,13.979,10.885,3.995,22.432,2.266z M26,50c-7.578,0-14.342-3.534-18.744-9.036c0.537-0.072,1.06-0.262,1.537-0.568v-0.001l15.246-9.797C24.642,30.855,25.304,31,26,31s1.358-0.145,1.961-0.403l15.246,9.797c0.477,0.307,1,0.495,1.539,0.567C40.344,46.465,33.579,50,26,50z"/> </svg>Join the beta on TestFlight</a>
+  <div><a class="by" href="https://brightdigit.com">TesserClip is developed by <svg role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 49" aria-label="BrightDigit" > <path fill="currentColor" d="M37.9 21.2a3 3 0 0 1-.7-.3c-1-.4-2-.7-2.5-.7-.7 0-1.3.4-2 1.1-.6.8-1 1.5-1 2.1v8.8c0 1 .6 1.7 1.7 2l1.4.3.8.1c.2 0 .2.2.2.3 0 .2 0 .3-.2.3h-9.8l-.1-.3c0-.2.3-.4.9-.4 1.4-.2 2-1 2-2.3V22c0-.5-.2-1-.8-1.1l-.9-.3-.7-.1a.8.8 0 0 1-.3-.2V20c0-.1 0-.2.2-.3l5-2.4.3-.1c.2 0 .3.2.3.5v3.1l.1.3c.1 0 .4-.3.8-1 1.3-1.7 2.3-2.5 3.1-2.5.5 0 1.2.1 2.1.5 1 .4 1.4.7 1.4 1 0 .2-.1.7-.4 1.3-.3.6-.6.9-1 .9M44.7 11.6c-.6 0-1-.2-1.5-.5-.4-.3-.6-.8-.6-1.4 0-.6.2-1.1.6-1.4a2 2 0 0 1 1.4-.6c.5 0 1 .2 1.4.7.3.4.5.8.5 1.3s-.1 1-.5 1.3c-.3.4-.8.6-1.3.6m-4.1 23.6c-.1 0-.2-.1-.2-.3 0-.2.3-.4 1-.4 1.3-.2 2-1 2-2.3V22c0-.5-.3-1-.9-1.1l-.8-.3a8 8 0 0 1-.7-.1 1 1 0 0 1-.4-.2V20c0-.1 0-.2.3-.3l5-2.4.2-.1c.3 0 .4.2.4.5v14.6c0 1.3.7 2 2 2.3.7 0 1 .2 1 .4s0 .3-.2.3ZM65.5 24.2a7 7 0 0 0-1.3-4.5 4.4 4.4 0 0 0-3.7-1.7c-2 0-3.3.9-4.1 2.7a8.7 8.7 0 0 0 .7 7c.9 1.6 2.1 2.3 3.7 2.3 1.5 0 2.7-.5 3.5-1.5.8-1 1.2-2.5 1.2-4.3M56 39.3l-.8 1c-.2.3-.3.8-.3 1.3s.2 1 .6 1.6c.3.6.8 1 1.5 1.5a9 9 0 0 0 10.5-.2c1.6-1 2.4-2.3 2.4-3.7 0-1.4-.7-2.3-2-2.8-.7-.2-2.3-.3-4.9-.4-2.6 0-4.2-.1-5-.2l-1 1-1 1M66.5 19l5.2-.3.6.1.3.7.1 1.1v.6H67.8l.3.5.3.8c.2.4.2 1 .2 1.7s-.1 1.5-.5 2.4c-.4.8-1 1.5-1.6 2.2a8.9 8.9 0 0 1-8.4 1.7 31.2 31.2 0 0 0-1.7 1.1c-.8.5-1.2 1-1.2 1.4 0 1 1.8 1.7 5.5 1.7s6 .1 7.2.3a5 5 0 0 1 2.7 1.3c1 1 1.5 2.2 1.5 3.5 0 1-.5 2.2-1.4 3.4-1.7 2-4.2 3.4-7.6 4.1-1.2.3-2.5.4-3.8.4-2.5 0-4.4-.5-5.6-1.4-1.3-.8-2-2-2-3.2 0-.7.2-1.2.5-1.7l1.3-1.3 1.6-1.2c.6-.4 1.2-1 1.7-1.7a6 6 0 0 1-3.2-1.2c-.9-.7-1.3-1.3-1.3-2s.2-1.2.5-1.5l1.3-.8 1.6-.6c.6-.2 1-.5 1.5-.8a7.8 7.8 0 0 1-3.4-2.4c-.8-1-1.2-2-1.2-3.3 0-2.2.8-4 2.4-5.4a8.7 8.7 0 0 1 6-2.1c2.2 0 4 .6 5.4 1.9M79.6 20l.1.6.2-.1.8-1c1.5-1.6 3-2.4 4.5-2.4 2 0 3.4.5 4.3 1.3 1.2 1.2 1.7 3 1.7 5.7v8.1c0 1.3.7 2 2.1 2.3.7 0 1 .2 1 .4s-.1.3-.2.3h-8.7c-.2 0-.2-.1-.2-.3 0-.2.3-.4.9-.4 1.4-.2 2-1 2-2.3v-8c0-1.8 0-3-.3-3.6-.5-1.2-1.6-1.8-3.3-1.8-1 0-2 .5-3.2 1.3-1.2.9-1.7 1.9-1.7 2.9v9.2c0 1.3.7 2 2 2.3.7 0 1 .2 1 .4s0 .3-.2.3h-8.7c-.1 0-.2-.1-.2-.3 0-.2.3-.4.9-.4 1.4-.2 2.1-1 2.1-2.3V8c0-.6-.3-1-.9-1.2l-.8-.2-.7-.1a.9.9 0 0 1-.4-.2V6c0-.1 0-.3.3-.4l5-2.3.2-.1c.2 0 .4.1.4.4ZM101 20.2c-.1 0-.2 0-.2.2V31c0 .8.2 1.4.6 1.9.3.4.8.6 1.3.6s1 0 1.4-.2a29.4 29.4 0 0 0 1.8-1.2l.6-.2.3.1v.6c-1.7 2-3.2 3-4.6 3-1.5 0-2.6-.4-3.3-1.3-.7-1-1.1-2-1.1-3.3V20h-1.5c-.3 0-.5 0-.5-.3v-.4a21.7 21.7 0 0 0 3.4-3l1-1.2c.4-.5.8-.8 1-.8.2 0 .3.1.3.3l-.7 2.6c0 .2.2.3.4.3h5c.5 0 .8.9.8 2.5h-.2ZM134.2 11.6c-.5 0-1-.2-1.4-.5-.4-.3-.6-.8-.6-1.4 0-.6.2-1.1.6-1.4a2 2 0 0 1 1.4-.6c.5 0 1 .2 1.3.7.4.4.6.8.6 1.3s-.2 1-.5 1.3c-.4.4-.8.6-1.4.6m-4 23.6c-.2 0-.2-.1-.2-.3 0-.2.3-.4.9-.4 1.4-.2 2-1 2-2.3V22c0-.5-.2-1-.8-1.1l-.9-.3-.7-.1a.9.9 0 0 1-.3-.2V20c0-.1 0-.2.2-.3l5-2.4.3-.1c.2 0 .3.2.3.5v14.6c0 1.3.7 2 2.1 2.3.6 0 1 .2 1 .4s-.1.3-.2.3ZM155 24.2a7 7 0 0 0-1.3-4.5 4.4 4.4 0 0 0-3.6-1.7c-2 0-3.4.9-4.2 2.7a8.7 8.7 0 0 0 .7 7c1 1.6 2.2 2.3 3.7 2.3s2.7-.5 3.5-1.5c.9-1 1.3-2.5 1.3-4.3m-9.7 15.1-.7 1c-.2.3-.3.8-.3 1.3s.2 1 .5 1.6c.4.6.9 1 1.5 1.5a9 9 0 0 0 10.5-.2c1.6-1 2.4-2.3 2.4-3.7 0-1.4-.7-2.3-2-2.8-.6-.2-2.2-.3-4.8-.4-2.6 0-4.3-.1-5-.2l-1 1c-.5.3-.8.6-1 1M156 19l5.3-.3.5.1.3.7.2 1.1-.1.6h-4.7l.2.5.4.8.2 1.7c0 .7-.2 1.5-.6 2.4-.3.8-.9 1.5-1.6 2.2a8.9 8.9 0 0 1-8.4 1.7 31.2 31.2 0 0 0-1.7 1.1c-.8.5-1.2 1-1.2 1.4 0 1 1.9 1.7 5.5 1.7 3.7 0 6.1.1 7.3.3a5 5 0 0 1 2.7 1.3c1 1 1.5 2.2 1.5 3.5 0 1-.5 2.2-1.5 3.4-1.6 2-4.1 3.4-7.5 4.1-1.2.3-2.5.4-3.9.4-2.4 0-4.3-.5-5.6-1.4-1.3-.8-2-2-2-3.2 0-.7.3-1.2.6-1.7l1.2-1.3 1.7-1.2c.6-.4 1.1-1 1.7-1.7a6 6 0 0 1-3.2-1.2c-1-.7-1.4-1.3-1.4-2s.2-1.2.6-1.5l1.3-.8 1.6-.6 1.4-.8a7.8 7.8 0 0 1-3.4-2.4c-.7-1-1.1-2-1.1-3.3 0-2.2.8-4 2.4-5.4a8.6 8.6 0 0 1 5.9-2.1c2.2 0 4 .6 5.4 1.9M167.9 11.6c-.6 0-1-.2-1.4-.5-.4-.3-.7-.8-.7-1.4 0-.6.2-1.1.6-1.4a2 2 0 0 1 1.4-.6c.6 0 1 .2 1.4.7.4.4.6.8.6 1.3s-.2 1-.6 1.3c-.3.4-.8.6-1.3.6m-4 23.6c-.2 0-.3-.1-.3-.3 0-.2.3-.4 1-.4 1.3-.2 2-1 2-2.3V22c0-.5-.2-1-.8-1.1l-.9-.3-.7-.1a.9.9 0 0 1-.3-.2l-.1-.3.3-.3 5-2.4.3-.1c.2 0 .3.2.3.5v14.6c0 1.3.7 2 2.1 2.3.6 0 1 .2 1 .4s-.1.3-.3.3ZM179.8 20.2l-.1.2V31c0 .8.2 1.4.5 1.9.4.4.8.6 1.3.6.6 0 1 0 1.4-.2a29.4 29.4 0 0 0 1.8-1.2l.7-.2.3.1-.1.6c-1.6 2-3.1 3-4.6 3-1.4 0-2.5-.4-3.2-1.3-.8-1-1.2-2-1.2-3.3V20h-1.4c-.4 0-.6 0-.6-.3l.1-.4a21.7 21.7 0 0 0 3.4-3l1-1.2c.4-.5.7-.8 1-.8.2 0 .3.1.3.3l-.7 2.6c0 .2.1.3.3.3h5c.6 0 .8.9.8 2.5h-.1Z" /> <path fill="currentColor" d="M12.8 30.4c1.4 1.5 3 2.5 4.6 3 2 .7 3.6.3 4.9-1a4.4 4.4 0 0 0 1.1-4.6 10 10 0 0 0-2.7-4.4c-2.7-2.7-5.2-3.8-7.6-3.2a5 5 0 0 0-2.4 1.3c-1.3 1.3-1.6 2.7-1.1 4.3.4 1.3 1.4 2.8 3 4.5ZM8.9 8.5c.2-.1.3-.1.4 0 .2.1 0 .8-.3 2a28.6 28.6 0 0 0-1 5.3c-.4 3.5-.1 5.8.8 6.9l.2-.4.3-.7 1.2-1.5c.7-.7 1.6-1.2 2.7-1.6a8.8 8.8 0 0 1 9.6 2.1 8.9 8.9 0 0 1 .1 12.7 7.2 7.2 0 0 1-6.5 2.1c-2.5-.4-4.8-1.5-6.7-3.5a13.1 13.1 0 0 1-4-8.7A37 37 0 0 1 8.3 9.6l.6-1M121.5 31.4c1.6-1.6 2.6-3.1 3-4.5.5-1.5.1-3-1.1-4.2a5 5 0 0 0-2.4-1.4c-2.4-.5-5 .5-7.6 3.3a10 10 0 0 0-2.8 4.3 4.4 4.4 0 0 0 1.2 4.7c1.3 1.3 3 1.6 4.9 1 1.6-.6 3.2-1.6 4.6-3Zm4.3-20.7a37 37 0 0 1 2.6 13.7 13.1 13.1 0 0 1-10.7 12.1c-2.6.4-4.8-.3-6.5-2a8.9 8.9 0 0 1 .1-12.7 9 9 0 0 1 9.6-2.2 7.5 7.5 0 0 1 3.9 3.1 16.4 16.4 0 0 1 .4 1.1c1-1 1.3-3.3 1-6.9a39.3 39.3 0 0 0-1.5-7.3h.5l.6 1.1" /> </svg></a></div>
+  <nav aria-label="Footer"><a href="#">Help</a><a href="#">Press Kit</a><a href="#">Privacy Policy</a><a href="#">Terms of Use</a><a href="#">Support</a><a href="https://brightdigit.com">brightdigit.com</a></nav>
+  <p class="copy">© 2026 BrightDigit. All rights reserved.</p>
+</div></footer>
+</body>
+</html>

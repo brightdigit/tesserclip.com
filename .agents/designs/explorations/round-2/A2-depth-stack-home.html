@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TesserClip: Fix copied text before you paste it</title>
+<style>
+/* A2 Depth stack. Round 2 exploration. The icon exploded along Z.
+   Display: Bricolage Grotesque (round 1 A, self-hosted). Body: system stack (SF Pro on Apple platforms). */
+@font-face{font-family:"Bricolage Grotesque";src:url("../assets/fonts/bricolage-grotesque-latin-wght-normal.woff2") format("woff2");font-weight:200 800;font-display:swap}
+:root{
+  --space:#0E0620;         /* page base */
+  --space-2:#170A2E;
+  --purple:#4A1D7A;        /* icon base */
+  --purple-hi:#5E2A99;
+  --violet:#9B6BD8;
+  --lilac:#DCC8F7;         /* 12.8:1 on --space, 6.3:1 at the brightest glow */
+  --ink:#FFFFFF;
+  --ink-2:rgba(255,255,255,.84);   /* 13.8:1 on --space, 7.3:1 at the brightest glow */
+  --ink-3:rgba(255,255,255,.70);   /*  9.7:1 on --space, 5.6:1 at the brightest glow */
+  --glass-fill:rgba(255,255,255,.07);
+  --glass-edge:rgba(255,255,255,.24);
+  --font-display:"Bricolage Grotesque",-apple-system,BlinkMacSystemFont,"SF Pro Display",Inter,system-ui,sans-serif;
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Inter,system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font-family:var(--font);color:var(--ink);font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+  background:
+    radial-gradient(900px 620px at 50% 0,rgba(94,42,153,.95),transparent 70%),
+    radial-gradient(700px 700px at 85% 900px,rgba(155,107,216,.30),transparent 70%),
+    radial-gradient(800px 800px at 0 2200px,rgba(94,42,153,.45),transparent 70%),
+    radial-gradient(900px 700px at 100% 3600px,rgba(94,42,153,.40),transparent 70%),
+    radial-gradient(900px 700px at 50% 100%,rgba(94,42,153,.75),transparent 70%),
+    var(--space)}
+a{color:inherit}
+img{display:block;max-width:100%;height:auto}
+kbd{font-family:var(--font);font-size:.82em;font-weight:500;display:inline-block;padding:1px 7px;border-radius:7px;line-height:1.5;white-space:nowrap;color:#fff;
+  background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.08));border:1px solid rgba(255,255,255,.28);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 1px 2px rgba(0,0,0,.3)}
+.wrap{max-width:1160px;margin:0 auto;padding:0 24px}
+
+/* Liquid Glass: reserved for the functional layer (nav, buttons, callouts), per HIG Materials. */
+.lg{position:relative;background:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,.05));
+  -webkit-backdrop-filter:blur(18px) saturate(170%);backdrop-filter:blur(18px) saturate(170%);
+  border:1px solid rgba(255,255,255,.26);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.6),inset 0 -1px 0 rgba(255,255,255,.10),inset 1px 0 0 rgba(255,255,255,.18),0 10px 30px rgba(10,0,30,.35)}
+.lg::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:radial-gradient(120% 90% at 18% 0,rgba(255,255,255,.16),transparent 45%)}
+/* Over bright content, HIG says add a ~35% dark dimming layer under clear glass. */
+.lg.dim{background:linear-gradient(180deg,rgba(46,16,82,.74),rgba(30,8,58,.80))}
+/* Standard material: the content layer (cards, panels). Tinted, frosted, quieter edge. */
+.mat{background:linear-gradient(160deg,rgba(255,255,255,.10),rgba(255,255,255,.035));border:1px solid rgba(255,255,255,.14);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 30px 60px -20px rgba(5,0,20,.6)}
+
+.nav{position:sticky;top:12px;z-index:30;padding:0 24px}
+.bar{max-width:1112px;margin:12px auto 0;height:56px;border-radius:999px;display:flex;align-items:center;justify-content:space-between;padding:0 10px 0 18px}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:700;font-size:19px;text-decoration:none;position:relative}
+.brand img{width:30px;height:30px}
+.nav-right{display:flex;align-items:center;gap:24px;position:relative}
+.nav-links{display:flex;gap:22px;font-size:14px;color:var(--ink-2)}
+.nav-links a{text-decoration:none}
+.pill{font-size:14px;font-weight:600;padding:8px 16px;border-radius:999px;background:#fff;color:var(--purple);text-decoration:none;box-shadow:inset 0 -2px 0 rgba(74,29,122,.12),0 4px 18px rgba(220,200,247,.35)}
+.menu-btn{display:none;width:24px;height:24px}
+
+/* Hero */
+.hero{padding:76px 0 40px;text-align:center;position:relative;overflow-x:clip}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;padding:7px 14px;border-radius:999px}
+.eyebrow i{width:7px;height:7px;border-radius:50%;background:#fff;box-shadow:0 0 10px #fff;position:relative}
+.eyebrow span{position:relative}
+.h-name{font-family:var(--font-display);font-size:132px;line-height:.95;font-weight:800;letter-spacing:-.045em;margin:22px 0 0;
+  background:linear-gradient(180deg,#fff 30%,#E6D7FA);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 6px 40px rgba(176,128,236,.45))}
+.tagline{font-family:var(--font-display);font-size:38px;line-height:1.15;font-weight:600;letter-spacing:-.02em;color:var(--lilac);margin:12px 0 0}
+.lead{font-size:20px;color:var(--ink-2);max-width:620px;margin:18px auto 0}
+.cta-row{display:flex;justify-content:center;gap:14px;margin-top:30px;flex-wrap:wrap}
+.tf-btn{display:inline-flex;align-items:center;gap:12px;padding:10px 26px 10px 14px;border-radius:999px;background:#fff;color:var(--purple);text-decoration:none;
+  box-shadow:inset 0 -3px 0 rgba(74,29,122,.10),inset 0 1px 0 #fff,0 0 0 6px rgba(255,255,255,.08),0 14px 40px rgba(176,128,236,.45)}
+.tf-btn svg{width:30px;height:30px}
+.tf-btn span{display:flex;flex-direction:column;text-align:left;line-height:1.1}
+.tf-btn small{font-size:11px;font-weight:500;opacity:.8}
+.tf-btn strong{font-size:19px;font-weight:700;letter-spacing:-.01em}
+.req{font-size:14px;color:var(--ink-3);margin:16px 0 0}
+
+/* The exploded stack */
+.stack-stage{position:relative;height:780px;margin-top:10px;perspective:2200px;perspective-origin:50% 20%}
+.stack{position:absolute;left:50%;top:210px;width:800px;height:523px;margin-left:-540px;transform-style:preserve-3d;transform:rotateX(6deg) rotateY(-20deg)}
+.sheet{position:absolute;inset:0;border-radius:22px;transform-style:preserve-3d}
+.sheet.win{transform:translateZ(0);filter:drop-shadow(0 40px 60px rgba(8,0,24,.55))}
+.sheet.win img{width:100%}
+.sheet.ghost{border:1px solid rgba(255,255,255,.55);background:linear-gradient(150deg,rgba(255,255,255,.58),rgba(236,226,252,.30) 55%,rgba(220,200,247,.22));
+  box-shadow:inset 0 1px 0 #fff,inset 1px 0 0 rgba(255,255,255,.6),0 30px 60px rgba(8,0,24,.35);overflow:hidden}
+.sheet.ghost::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.35) 42%,transparent 52%)}
+.g1{transform:translate3d(70px,-52px,-150px);opacity:.94} .g2{transform:translate3d(140px,-104px,-300px);opacity:.84} .g3{transform:translate3d(210px,-156px,-450px);opacity:.72}
+.ghost .tb{height:44px;display:flex;align-items:center;gap:8px;padding:0 18px;border-bottom:1px solid rgba(74,29,122,.12);font-size:14px;font-weight:600;color:#2A1446}
+.ghost .tb i{width:12px;height:12px;border-radius:50%;background:rgba(74,29,122,.22)}
+.ghost .tb b{margin-left:10px;font-weight:600}
+.ghost .tx{padding:22px 26px;font-size:15px;line-height:1.7;color:#2A1446;white-space:pre-line}
+/* the backmost plate is the icon itself: purple, with the clipboard tab */
+.plate{position:absolute;inset:-34px -40px;border-radius:64px;transform:translate3d(290px,-216px,-620px);
+  background:radial-gradient(120% 90% at 30% 0,#6B33AD,#4A1D7A 55%,#2B0F4A);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 0 120px rgba(155,107,216,.45)}
+.plate::before{content:"";position:absolute;left:50%;top:-30px;width:200px;height:84px;margin-left:-100px;border-radius:26px;
+  background:linear-gradient(180deg,rgba(255,255,255,.75),rgba(255,255,255,.4));border:1px solid rgba(255,255,255,.8)}
+.plate::after{content:"";position:absolute;left:50%;top:-4px;width:30px;height:30px;margin-left:-15px;border-radius:50%;background:#7A45B8}
+.depth-rule{position:absolute;left:0;top:50%;width:700px;height:1px;transform-origin:0 0;transform:rotateY(90deg);background:repeating-linear-gradient(90deg,rgba(255,255,255,.6) 0 6px,transparent 6px 14px)}
+.callout{position:absolute;display:inline-flex;align-items:center;gap:10px;padding:10px 16px;border-radius:999px;font-size:14px;font-weight:600;white-space:nowrap;z-index:5}
+.callout span{position:relative}
+.callout kbd{position:relative}
+.c-copy{left:calc(50% + 300px);top:96px}
+.c-draft{left:calc(50% - 600px);top:600px;text-align:left;flex-direction:column;align-items:flex-start;border-radius:22px;padding:14px 18px;font-weight:500;gap:4px;max-width:300px;white-space:normal}
+.c-draft strong{font-family:var(--font-display);font-size:19px;position:relative}
+.c-draft span{color:var(--ink-2);font-size:14px}
+.zlabels{position:absolute;right:calc(50% - 600px);top:150px;display:grid;gap:14px;font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums;text-align:right}
+.zlabels b{color:#fff;font-weight:600}
+.floor-glow{position:absolute;left:50%;bottom:0;width:1000px;height:160px;margin-left:-500px;background:radial-gradient(closest-side,rgba(155,107,216,.45),transparent);filter:blur(10px)}
+
+/* Sections */
+.sec{padding:110px 0}
+.sec-head{text-align:center;max-width:760px;margin:0 auto}
+.h-sec{font-family:var(--font-display);font-size:64px;line-height:1.02;font-weight:800;letter-spacing:-.035em;margin:0}
+.sec-lead{font-size:20px;color:var(--ink-2);margin:18px auto 0;max-width:640px}
+
+/* Features: floating planes at different depths */
+.planes{perspective:1800px;perspective-origin:50% 0;margin-top:64px}
+.plane-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;transform-style:preserve-3d;transform:rotateX(10deg)}
+.feat{border-radius:28px;padding:30px 30px 32px;position:relative}
+.feat:nth-child(3n+1){transform:translateZ(30px) rotateY(6deg)}
+.feat:nth-child(3n+2){transform:translateZ(90px)}
+.feat:nth-child(3n){transform:translateZ(30px) rotateY(-6deg)}
+.feat:nth-child(n+4){margin-top:6px}
+.feat .tile{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;color:#fff;
+  background:linear-gradient(160deg,#7A45B8,#4A1D7A);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 8px 20px rgba(74,29,122,.6),0 0 0 1px rgba(255,255,255,.12)}
+.feat .tile svg{width:26px;height:26px}
+.feat h3{font-family:var(--font-display);font-size:23px;line-height:1.2;font-weight:700;letter-spacing:-.015em;margin:20px 0 8px}
+.feat p{margin:0;color:var(--ink-2);font-size:16px}
+.menu-path{font-weight:600;color:#fff}
+.zchip{position:absolute;right:22px;top:24px;font-size:11px;font-weight:600;letter-spacing:.04em;color:var(--ink-3)}
+
+/* Safe edits: the alert pulled forward along Z */
+.split{display:grid;grid-template-columns:1fr 1.25fr;gap:56px;align-items:center}
+.split h2{font-family:var(--font-display);font-size:54px;line-height:1.02;font-weight:800;letter-spacing:-.035em;margin:0}
+.split p{color:var(--ink-2);font-size:19px;margin:18px 0 0}
+.list{list-style:none;padding:0;margin:26px 0 0;display:grid;gap:14px}
+.list li{display:flex;gap:12px;color:var(--ink-2)}
+.list svg{width:22px;height:22px;flex:none;color:var(--lilac);margin-top:2px}
+.explode{position:relative;height:520px;perspective:1600px;perspective-origin:30% 20%}
+.explode .ex{position:absolute;left:30px;top:60px;width:600px;transform-style:preserve-3d;transform:rotateX(8deg) rotateY(24deg)}
+.explode .ex img{width:100%;filter:drop-shadow(0 30px 50px rgba(8,0,24,.6))}
+.alert{position:absolute;left:184px;top:58px;width:260px;padding:22px 20px 18px;border-radius:20px;text-align:center;color:#1D1D1F;transform:translateZ(150px);
+  background:rgba(246,245,249,.96);box-shadow:inset 0 1px 0 #fff,0 0 0 1px rgba(0,0,0,.08),0 40px 70px rgba(8,0,24,.55)}
+.alert .ai{width:44px;height:44px;border-radius:11px;margin:0 auto 10px;display:grid;place-items:center;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.12);color:#0A62D6}
+.alert .ai svg{width:24px;height:24px}
+.alert strong{font-size:14px;display:block}
+.alert p{font-size:11.5px;line-height:1.4;color:#3C3C43;margin:6px 0 14px}
+.alert .btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.alert .btns span{font-size:12.5px;padding:5px 0;border-radius:999px;background:#E9E9EE;border:1px solid #CFCFD6}
+.alert .btns span.def{background:#0A62D6;color:#fff;border-color:#0A62D6}
+.ztrail{position:absolute;left:184px;top:58px;width:260px;height:180px;border-radius:20px;border:1px dashed rgba(255,255,255,.55);transform:translateZ(0)}
+
+/* How it works: four planes receding into the page */
+.steps-stage{perspective:1600px;perspective-origin:20% 50%;margin-top:64px}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;transform-style:preserve-3d;transform:rotateY(8deg) rotateX(3deg);transform-origin:0 50%}
+.step{border-radius:26px;padding:26px 24px 26px;position:relative;min-height:280px}
+.step .num{font-family:var(--font-display);font-size:84px;line-height:.9;font-weight:800;letter-spacing:-.05em;
+  background:linear-gradient(180deg,#fff,rgba(255,255,255,.25));-webkit-background-clip:text;background-clip:text;color:transparent}
+.step h3{font-family:var(--font-display);font-size:23px;font-weight:700;margin:14px 0 6px;letter-spacing:-.015em}
+.step p{margin:0;color:var(--ink-2);font-size:16px}
+.keys{display:flex;gap:6px;margin-top:16px}
+
+/* Privacy */
+.priv-panel{border-radius:40px;padding:72px;display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center;position:relative}
+.priv-panel h2{text-align:left}
+.priv{display:grid;gap:16px;perspective:1400px;perspective-origin:0 50%}
+.priv>div{display:flex;gap:14px;padding:20px 22px;border-radius:22px;transform-style:preserve-3d}
+.priv>div:nth-child(1){transform:rotateY(-14deg) translateZ(0)}
+.priv>div:nth-child(2){transform:rotateY(-14deg) translateZ(50px) translateX(18px)}
+.priv>div:nth-child(3){transform:rotateY(-14deg) translateZ(100px) translateX(36px)}
+.priv .tile{width:42px;height:42px;flex:none;border-radius:13px;display:grid;place-items:center;background:linear-gradient(160deg,#7A45B8,#4A1D7A);box-shadow:inset 0 1px 0 rgba(255,255,255,.45)}
+.priv .tile svg{width:22px;height:22px}
+.h-priv{font-size:56px;text-align:left}
+.priv span{position:relative}
+.priv h3{font-size:17px;margin:0 0 2px}
+.priv p{margin:0;color:var(--ink-2);font-size:15px}
+.reqline{display:flex;justify-content:center;gap:36px;margin-top:36px;font-size:14px;color:var(--ink-2);flex-wrap:wrap}
+.reqline span{display:inline-flex;align-items:center;gap:8px}
+.reqline svg{width:18px;height:18px;color:var(--lilac)}
+
+/* The icon, exploded (used in privacy and footer) */
+.icon3d{position:relative;width:340px;height:340px;margin:0 auto;perspective:1200px}
+.icon3d .sh{scale:1.13}
+.icon3d .rig{position:absolute;inset:0;transform-style:preserve-3d;transform:rotateX(10deg) rotateY(-38deg)}
+.icon3d .base{position:absolute;inset:0;border-radius:72px;background:radial-gradient(120% 90% at 30% 0,#6B33AD,#4A1D7A 55%,#2B0F4A);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 0 80px rgba(155,107,216,.5)}
+.icon3d .sh{position:absolute;left:96px;top:56px;width:130px;height:186px;border-radius:20px;border:1.5px solid rgba(255,255,255,.75);
+  background:linear-gradient(160deg,rgba(255,255,255,.55),rgba(240,230,255,.18));box-shadow:inset 0 1px 0 #fff,0 10px 30px rgba(20,0,50,.25)}
+.icon3d .sh1{transform:translate3d(-30px,14px,40px);opacity:.8}
+.icon3d .sh2{transform:translate3d(6px,0,110px);opacity:.9}
+.icon3d .sh3{transform:translate3d(42px,-14px,180px);background:linear-gradient(160deg,rgba(255,255,255,.8),rgba(240,230,255,.4))}
+.icon3d .sh3::before{content:"";position:absolute;left:50%;top:-14px;width:70px;height:30px;margin-left:-35px;border-radius:10px;background:#fff}
+.icon3d .sh3::after{content:"";position:absolute;left:22px;right:26px;top:66px;height:60px;
+  background:linear-gradient(#fff,#fff) 0 0/100% 8px no-repeat,linear-gradient(#fff,#fff) 0 26px/78% 8px no-repeat,linear-gradient(#fff,#fff) 0 52px/58% 8px no-repeat;filter:drop-shadow(0 0 1px rgba(74,29,122,.5))}
+.icon3d .shadow{position:absolute;left:10%;right:10%;bottom:-40px;height:40px;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.5),transparent)}
+
+footer{padding:90px 0 56px;text-align:center}
+.f-big{font-family:var(--font-display);font-size:88px;line-height:1;font-weight:800;letter-spacing:-.045em;margin:56px 0 30px}
+.by{display:inline-flex;align-items:center;gap:8px;color:var(--ink-3);font-size:13px;text-decoration:none;margin-top:44px}
+.by svg{height:22px;width:auto;color:var(--ink-2)}
+footer nav{display:flex;justify-content:center;gap:26px;flex-wrap:wrap;margin-top:20px;font-size:14px;color:var(--ink-2)}
+footer nav a{text-decoration:none}
+.copy{font-size:13px;color:var(--ink-3);margin:22px 0 0}
+
+/* Motion (CSS only): the stack breathes along Z. Off under reduced motion. */
+@keyframes breathe-1{50%{transform:translate3d(84px,-62px,-180px)}}
+@keyframes breathe-2{50%{transform:translate3d(168px,-124px,-360px)}}
+@keyframes breathe-3{50%{transform:translate3d(252px,-186px,-540px)}}
+.g1{animation:breathe-1 10s ease-in-out infinite}.g2{animation:breathe-2 10s ease-in-out infinite}.g3{animation:breathe-3 10s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.g1,.g2,.g3{animation:none}}
+@media (prefers-reduced-transparency:reduce){.lg,.mat{-webkit-backdrop-filter:none;backdrop-filter:none;background:#2A1146}}
+
+@media (max-width:820px){
+  .nav{padding:0 12px}.bar{height:52px;padding:0 8px 0 14px}
+  .nav-links{display:none}.menu-btn{display:block;position:relative}.nav-right{gap:14px}
+  .hero{padding:48px 0 10px}
+  .h-name{font-size:62px}
+  .tagline{font-size:25px}
+  .lead{font-size:18px}
+  .stack-stage{height:380px;perspective:1100px;margin-top:10px}
+  .stack{width:300px;height:196px;margin-left:-200px;top:130px}
+  .ghost .tb{height:22px;font-size:8px;padding:0 9px;gap:4px}.ghost .tb i{width:6px;height:6px}
+  .ghost .tx{padding:10px 12px;font-size:7px}
+  .g1{transform:translate3d(26px,-20px,-60px)}.g2{transform:translate3d(52px,-40px,-120px)}.g3{transform:translate3d(78px,-60px,-180px)}
+  .g1,.g2,.g3{animation:none}
+  .plate{transform:translate3d(108px,-82px,-240px);inset:-16px -18px;border-radius:30px}
+  .plate::before{width:90px;height:40px;top:-14px;margin-left:-45px;border-radius:12px}.plate::after{width:14px;height:14px;margin-left:-7px;top:-2px}
+  .depth-rule{width:330px}
+  .zlabels{display:none}
+  .c-copy{left:auto;right:12px;top:40px;font-size:12px;padding:7px 12px}
+  .c-draft{left:12px;top:296px;max-width:250px;padding:10px 14px}
+  .c-draft strong{font-size:16px}.c-draft span{font-size:12.5px}
+  .sec{padding:72px 0}
+  .h-sec{font-size:40px}
+  .sec-lead{font-size:18px}
+  .planes{perspective:none;margin-top:36px}
+  .plane-grid{grid-template-columns:1fr;gap:14px;transform:none}
+  .feat,.feat:nth-child(n){transform:none;margin-top:0;padding:24px}
+  .split{grid-template-columns:1fr;gap:20px}
+  .split h2{font-size:38px}
+  .explode{height:300px;perspective:900px}
+  .explode .ex{left:0;top:30px;width:330px}
+  .alert{left:96px;top:30px;width:150px;padding:10px 10px 9px;border-radius:12px;transform:translateZ(90px)}
+  .alert .ai{width:24px;height:24px;border-radius:6px;margin-bottom:5px}.alert .ai svg{width:14px;height:14px}
+  .alert strong{font-size:9px}.alert p{font-size:7px;margin:3px 0 7px}.alert .btns span{font-size:8px;padding:2px 0}
+  .ztrail{left:96px;top:30px;width:150px;height:104px;border-radius:12px}
+  .steps-stage{perspective:none;margin-top:36px}
+  .steps{grid-template-columns:1fr 1fr;transform:none;gap:12px}
+  .step{min-height:0;padding:20px 18px}
+  .step .num{font-size:56px}
+  .step h3{font-size:19px}
+  .step p{font-size:15px}
+  .priv-panel{grid-template-columns:1fr;padding:36px 22px;border-radius:30px;gap:10px}
+  .h-priv{font-size:38px}
+  .priv{perspective:none}.priv>div:nth-child(n){transform:none}
+  .reqline{flex-direction:column;align-items:center;gap:12px}
+  footer .icon3d{transform:scale(.7);margin:-30px auto -40px}
+  .f-big{font-size:52px;margin-top:30px}
+}
+</style>
+</head>
+<body data-state="beta">
+
+<div class="nav"><nav class="bar lg" aria-label="Main navigation">
+  <a class="brand" href="#"><img src="../assets/icons/icon-default-384.png" alt="" width="30" height="30">TesserClip</a>
+  <div class="nav-right">
+    <div class="nav-links"><a href="#">Help</a><a href="#">Press</a><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Support</a></div>
+    <a class="pill" href="#testflight-url">Join Beta</a>
+    <span class="menu-btn" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span>
+  </div>
+</nav></div>
+
+<main>
+<section class="hero" aria-labelledby="hero-title">
+  <div class="wrap">
+    <span class="eyebrow lg"><i></i><span>Now in beta on TestFlight</span></span>
+    <h1 id="hero-title" class="h-name">TesserClip</h1>
+    <p class="tagline">Fix copied text before you paste it.</p>
+    <p class="lead">TesserClip opens straight to whatever you last copied, in a plain‑text editor. Edit it, copy it, and paste it where it belongs.</p>
+    <div class="cta-row"><a class="tf-btn" href="#testflight-url"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52" width="30" height="30" fill="currentColor" aria-hidden="true"> <path d="M52,26C52,11.727,40.438,0.108,26.189,0.005C26.173,0.005,26.157,0,26.141,0h-0.281c-0.017,0-0.032,0.005-0.049,0.005C11.561,0.108,0,11.727,0,26c0,4.635,1.225,8.987,3.36,12.76c0.02,0.038,0.031,0.079,0.053,0.117l0.141,0.245c0.021,0.037,0.05,0.066,0.073,0.102C8.16,46.864,16.49,52,26,52c9.51,0,17.84-5.135,22.373-12.776c0.023-0.037,0.053-0.066,0.075-0.104l0.139-0.242c0.021-0.037,0.032-0.077,0.052-0.114C50.774,34.99,52,30.637,52,26z M50,26c0,3.095-0.595,6.051-1.667,8.77c-0.333-0.435-0.755-0.804-1.264-1.066h0l-16.131-8.317c-0.17-1.372-0.887-2.566-1.938-3.361l0.863-18.123c0.027-0.576-0.084-1.128-0.298-1.636C41.114,3.994,50,13.978,50,26z M46.644,38.22c-0.244,0.366-0.597,0.626-1.016,0.727c-0.457,0.111-0.933,0.028-1.341-0.234l-14.481-9.307l1.046-1.813l15.299,7.888c0,0,0,0,0,0c0.434,0.224,0.746,0.595,0.878,1.043c0.12,0.41,0.071,0.845-0.126,1.243C46.819,37.919,46.733,38.071,46.644,38.22z M7.712,38.712c-0.411,0.265-0.889,0.35-1.342,0.238c-0.417-0.1-0.771-0.363-1.016-0.732c-0.089-0.15-0.175-0.301-0.261-0.453c-0.193-0.394-0.242-0.829-0.121-1.24c0.132-0.451,0.443-0.821,0.875-1.044l15.299-7.888l1.046,1.813L7.712,38.712z M23,26c0-1.654,1.346-3,3-3s3,1.346,3,3s-1.346,3-3,3S23,27.654,23,26z M24.954,21L24.135,3.807c-0.023-0.488,0.142-0.943,0.465-1.282c0.311-0.326,0.74-0.507,1.209-0.52C25.873,2.004,25.936,2,26,2c0.064,0,0.127,0.004,0.19,0.005c0.467,0.013,0.895,0.194,1.208,0.523c0.324,0.34,0.49,0.794,0.467,1.279L27.046,21H24.954z M22.432,2.266c-0.213,0.508-0.323,1.059-0.295,1.635c0,0.001,0,0.001,0,0.001L23,22.026c-1.051,0.796-1.768,1.99-1.938,3.361L4.931,33.704c-0.51,0.263-0.931,0.632-1.263,1.069C2.596,32.053,2,29.096,2,26C2,13.979,10.885,3.995,22.432,2.266z M26,50c-7.578,0-14.342-3.534-18.744-9.036c0.537-0.072,1.06-0.262,1.537-0.568v-0.001l15.246-9.797C24.642,30.855,25.304,31,26,31s1.358-0.145,1.961-0.403l15.246,9.797c0.477,0.307,1,0.495,1.539,0.567C40.344,46.465,33.579,50,26,50z"/> </svg><span><small>Join the beta on</small><strong>TestFlight</strong></span></a></div>
+    <p class="req">Coming soon to the Mac App Store. Requires macOS 27 or later.</p>
+  </div>
+
+  <div class="stack-stage" role="img" aria-label="A TesserClip window showing copied release notes, with three other TesserClip windows behind it, each holding different copied text">
+    <div class="floor-glow"></div>
+    <div class="stack" aria-hidden="true">
+      <div class="plate"></div>
+      <div class="sheet ghost g3"><div class="tb"><i></i><i></i><i></i><b>Standup notes</b></div><div class="tx">Yesterday: release notes for 2.4
+Today: fix the sync bug
+Blocked: nothing</div></div>
+      <div class="sheet ghost g2"><div class="tb"><i></i><i></i><i></i><b>Fix sync after sleep</b></div><div class="tx">Fix sync after sleep
+
+Resume the sync session when the Mac wakes,
+instead of waiting for the next timer.</div></div>
+      <div class="sheet ghost g1"><div class="tb"><i></i><i></i><i></i><b>Re: Thursday</b></div><div class="tx">Hi Sam,
+
+Thursday at 2 works for me. I’ll bring the
+release notes and we can go through them.</div></div>
+      <div class="depth-rule"></div>
+      <div class="sheet win"><img src="../../assets/screens/01-editor-window.png" alt="" width="800"></div>
+    </div>
+    <span class="callout lg dim c-copy"><span>Copy All</span><kbd>⇧⌘C</kbd></span>
+    <span class="callout lg dim c-draft"><strong>Every window is its own draft.</strong><span>Each window keeps the text it opened with.</span></span>
+  </div>
+</section>
+
+<section class="sec" id="features" aria-labelledby="features-title"><div class="wrap">
+  <div class="sec-head">
+    <h2 id="features-title" class="h-sec">Made for the moment between copy and paste.</h2>
+    <p class="sec-lead">TesserClip gives the text you just copied a clean place to be fixed. There are no files to save and no settings to learn.</p>
+  </div>
+  <div class="planes"><div class="plane-grid">
+    <div class="feat mat"><div class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2.5"/><rect x="9" y="2.5" width="6" height="3.2" rx="1.2"/><path d="M8.5 11h7M8.5 14.5h4.5"/></svg></div><h3>Opens to your last copy</h3><p>Open TesserClip and the text you just copied is already in a window, with the cursor at the end, ready to fix.</p></div>
+    <div class="feat mat"><div class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="13" height="12" rx="2"/><path d="M7.5 8V6a2 2 0 0 1 2-2H19a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-3"/><path d="M3 11.5h13"/></svg></div><h3>Every window is its own draft</h3><p>Each window keeps the text it opened with. Copying something new never replaces it. Open the new text in another window with <kbd>⌘N</kbd>.</p></div>
+    <div class="feat mat"><div class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6.5h9M8.5 6.5V18M14.5 11h6M17.5 11v7"/></svg></div><h3>A plain‑text editor</h3><p>Rich text arrives as plain text. Smart quotes, dashes and other substitutions stay off until you turn them on in <span class="menu-path">Edit ▸ Substitutions</span>.</p></div>
+    <div class="feat mat"><div class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8.5" y="8.5" width="11.5" height="12.5" rx="2"/><path d="M15.5 8.5V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9.5a2 2 0 0 0 2 2h2.5"/></svg></div><h3>Copy All <kbd>⇧⌘C</kbd></h3><p>Copy the whole window from the toolbar or the Edit menu in one step. Your selection and cursor stay where they were.</p></div>
+    <div class="feat mat"><div class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5 19 6v5.5c0 4.2-3 7.6-7 9-4-1.4-7-4.8-7-9V6l7-2.5Z"/><path d="M12 8.5v4.2"/><circle cx="12" cy="15.8" r=".6" fill="currentColor"/></svg></div><h3>Asks before losing edits</h3><p>Close a window with edits you haven’t copied and TesserClip asks first. If you’ve already copied them, it just closes.</p></div>
+    <div class="feat mat"><div class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="12.5" height="16" rx="2.5"/><path d="M7.5 11.5h5.5M7.5 15h3.5"/><circle cx="18.2" cy="5.8" r="3.3" fill="currentColor" stroke="none"/></svg></div><h3>Knows when there’s new text</h3><p>A dot on New Window from Clipboard tells you there’s something new. TesserClip checks that it’s text without reading what it says.</p></div>
+  </div></div>
+</div></section>
+
+<section class="sec" aria-labelledby="safe-title" style="padding-top:40px"><div class="wrap">
+  <div class="split">
+    <div>
+      <h2 id="safe-title">Your edits are safe until they’re copied.</h2>
+      <p>Close a window you’ve changed and TesserClip checks with you first. Cancel is one <kbd>esc</kbd> away, and nothing skips the question.</p>
+      <ul class="list">
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3"/><path d="M4.5 4.5v4h4"/></svg><span>Quit with <kbd>⌘Q</kbd> any time. Your windows and their text come back next time.</span></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8.5" y="8.5" width="11.5" height="12.5" rx="2"/><path d="M15.5 8.5V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9.5a2 2 0 0 0 2 2h2.5"/></svg><span>Already copied your edits? The window closes without asking.</span></li>
+      </ul>
+    </div>
+    <div class="explode" role="img" aria-label="The Discard your edits? sheet, with Cancel and Discard buttons, lifted forward from an edited TesserClip window">
+      <div class="ex" aria-hidden="true">
+        <img src="../../assets/screens/01-editor-window.png" alt="" width="600">
+        <div class="ztrail"></div>
+        <div class="alert"><div class="ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2.5"/><rect x="9" y="2.5" width="6" height="3.2" rx="1.2"/><path d="M8.5 11h7M8.5 14.5h4.5"/></svg></div><strong>Discard your edits?</strong><p>The changes in this window haven’t been copied. Closing it can’t be undone.</p><div class="btns"><span>Cancel</span><span class="def">Discard</span></div></div>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+<section class="sec" id="how" aria-labelledby="how-title"><div class="wrap">
+  <div class="sec-head">
+    <h2 id="how-title" class="h-sec">How it works</h2>
+    <p class="sec-lead">No more pasting into TextEdit just to fix a typo.</p>
+  </div>
+  <div class="steps-stage"><div class="steps">
+    <div class="step mat"><span class="num">1</span><h3>Copy</h3><p>Copy text in any app, the way you always do.</p><div class="keys"><kbd>⌘C</kbd></div></div>
+    <div class="step mat"><span class="num">2</span><h3>Open TesserClip</h3><p>Click it in the Dock or switch to it. Your text is waiting.</p><div class="keys"><kbd>⌘Tab</kbd></div></div>
+    <div class="step mat"><span class="num">3</span><h3>Fix it</h3><p>Edit in plain text, with Undo, Find and spelling built in.</p><div class="keys"><kbd>⌘Z</kbd><kbd>⌘F</kbd></div></div>
+    <div class="step mat"><span class="num">4</span><h3>Copy it back</h3><p>Copy the whole window, switch back, and paste.</p><div class="keys"><kbd>⇧⌘C</kbd><kbd>⌘V</kbd></div></div>
+  </div></div>
+</div></section>
+
+<section class="sec" aria-labelledby="privacy-title" style="padding-top:20px"><div class="wrap">
+  <div class="priv-panel mat">
+    <div>
+      <h2 id="privacy-title" class="h-sec h-priv">Your text stays on your Mac.</h2>
+      <p class="sec-lead" style="margin-left:0;font-size:18px">TesserClip reads the clipboard only when it opens a window. Drafts are saved in the app’s own container on your Mac, so your windows come back after you quit.</p>
+    </div>
+    <div class="priv">
+      <div class="lg dim"><span class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10.5" rx="2.2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg></span><span><h3>Nothing leaves your Mac</h3><p>Your text isn’t sent to BrightDigit or anyone else.</p></span></div>
+      <div class="lg dim"><span class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M5 20a7 7 0 0 1 14 0"/><path d="M4 4l16 16"/></svg></span><span><h3>No account</h3><p>There’s nothing to sign up for or sign in to.</p></span></div>
+      <div class="lg dim"><span class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.6"/><path d="M4 4l16 16"/></svg></span><span><h3>No tracking</h3><p>No analytics or ads in the app. <a href="#">Privacy Policy</a></p></span></div>
+    </div>
+  </div>
+  <div class="reqline">
+    <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="5" width="15" height="10.5" rx="1.6"/><path d="M2.5 19h19"/></svg>Requires macOS 27 or later</span>
+    <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19.5h14"/></svg>Coming soon to the Mac App Store</span>
+    <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6.5C10 5 7 4.5 4 5v13c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5V5c-3-.5-6 0-8 1.5Z"/><path d="M12 6.5V19"/></svg><a href="#">Read the TesserClip Help ›</a></span>
+  </div>
+</div></section>
+</main>
+
+<footer><div class="wrap">
+  <div class="icon3d" role="img" aria-label="TesserClip app icon, its glass sheets pulled apart"><div class="rig"><div class="base"></div><div class="sh sh1"></div><div class="sh sh2"></div><div class="sh sh3"></div></div><div class="shadow"></div></div>
+  <p class="f-big">Copy. Fix. Paste.</p>
+  <a class="tf-btn" href="#testflight-url"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52" width="30" height="30" fill="currentColor" aria-hidden="true"> <path d="M52,26C52,11.727,40.438,0.108,26.189,0.005C26.173,0.005,26.157,0,26.141,0h-0.281c-0.017,0-0.032,0.005-0.049,0.005C11.561,0.108,0,11.727,0,26c0,4.635,1.225,8.987,3.36,12.76c0.02,0.038,0.031,0.079,0.053,0.117l0.141,0.245c0.021,0.037,0.05,0.066,0.073,0.102C8.16,46.864,16.49,52,26,52c9.51,0,17.84-5.135,22.373-12.776c0.023-0.037,0.053-0.066,0.075-0.104l0.139-0.242c0.021-0.037,0.032-0.077,0.052-0.114C50.774,34.99,52,30.637,52,26z M50,26c0,3.095-0.595,6.051-1.667,8.77c-0.333-0.435-0.755-0.804-1.264-1.066h0l-16.131-8.317c-0.17-1.372-0.887-2.566-1.938-3.361l0.863-18.123c0.027-0.576-0.084-1.128-0.298-1.636C41.114,3.994,50,13.978,50,26z M46.644,38.22c-0.244,0.366-0.597,0.626-1.016,0.727c-0.457,0.111-0.933,0.028-1.341-0.234l-14.481-9.307l1.046-1.813l15.299,7.888c0,0,0,0,0,0c0.434,0.224,0.746,0.595,0.878,1.043c0.12,0.41,0.071,0.845-0.126,1.243C46.819,37.919,46.733,38.071,46.644,38.22z M7.712,38.712c-0.411,0.265-0.889,0.35-1.342,0.238c-0.417-0.1-0.771-0.363-1.016-0.732c-0.089-0.15-0.175-0.301-0.261-0.453c-0.193-0.394-0.242-0.829-0.121-1.24c0.132-0.451,0.443-0.821,0.875-1.044l15.299-7.888l1.046,1.813L7.712,38.712z M23,26c0-1.654,1.346-3,3-3s3,1.346,3,3s-1.346,3-3,3S23,27.654,23,26z M24.954,21L24.135,3.807c-0.023-0.488,0.142-0.943,0.465-1.282c0.311-0.326,0.74-0.507,1.209-0.52C25.873,2.004,25.936,2,26,2c0.064,0,0.127,0.004,0.19,0.005c0.467,0.013,0.895,0.194,1.208,0.523c0.324,0.34,0.49,0.794,0.467,1.279L27.046,21H24.954z M22.432,2.266c-0.213,0.508-0.323,1.059-0.295,1.635c0,0.001,0,0.001,0,0.001L23,22.026c-1.051,0.796-1.768,1.99-1.938,3.361L4.931,33.704c-0.51,0.263-0.931,0.632-1.263,1.069C2.596,32.053,2,29.096,2,26C2,13.979,10.885,3.995,22.432,2.266z M26,50c-7.578,0-14.342-3.534-18.744-9.036c0.537-0.072,1.06-0.262,1.537-0.568v-0.001l15.246-9.797C24.642,30.855,25.304,31,26,31s1.358-0.145,1.961-0.403l15.246,9.797c0.477,0.307,1,0.495,1.539,0.567C40.344,46.465,33.579,50,26,50z"/> </svg><span><small>Join the beta on</small><strong>TestFlight</strong></span></a>
+  <div><a class="by" href="https://brightdigit.com">TesserClip is developed by <svg role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 49" aria-label="BrightDigit" > <path fill="currentColor" d="M37.9 21.2a3 3 0 0 1-.7-.3c-1-.4-2-.7-2.5-.7-.7 0-1.3.4-2 1.1-.6.8-1 1.5-1 2.1v8.8c0 1 .6 1.7 1.7 2l1.4.3.8.1c.2 0 .2.2.2.3 0 .2 0 .3-.2.3h-9.8l-.1-.3c0-.2.3-.4.9-.4 1.4-.2 2-1 2-2.3V22c0-.5-.2-1-.8-1.1l-.9-.3-.7-.1a.8.8 0 0 1-.3-.2V20c0-.1 0-.2.2-.3l5-2.4.3-.1c.2 0 .3.2.3.5v3.1l.1.3c.1 0 .4-.3.8-1 1.3-1.7 2.3-2.5 3.1-2.5.5 0 1.2.1 2.1.5 1 .4 1.4.7 1.4 1 0 .2-.1.7-.4 1.3-.3.6-.6.9-1 .9M44.7 11.6c-.6 0-1-.2-1.5-.5-.4-.3-.6-.8-.6-1.4 0-.6.2-1.1.6-1.4a2 2 0 0 1 1.4-.6c.5 0 1 .2 1.4.7.3.4.5.8.5 1.3s-.1 1-.5 1.3c-.3.4-.8.6-1.3.6m-4.1 23.6c-.1 0-.2-.1-.2-.3 0-.2.3-.4 1-.4 1.3-.2 2-1 2-2.3V22c0-.5-.3-1-.9-1.1l-.8-.3a8 8 0 0 1-.7-.1 1 1 0 0 1-.4-.2V20c0-.1 0-.2.3-.3l5-2.4.2-.1c.3 0 .4.2.4.5v14.6c0 1.3.7 2 2 2.3.7 0 1 .2 1 .4s0 .3-.2.3ZM65.5 24.2a7 7 0 0 0-1.3-4.5 4.4 4.4 0 0 0-3.7-1.7c-2 0-3.3.9-4.1 2.7a8.7 8.7 0 0 0 .7 7c.9 1.6 2.1 2.3 3.7 2.3 1.5 0 2.7-.5 3.5-1.5.8-1 1.2-2.5 1.2-4.3M56 39.3l-.8 1c-.2.3-.3.8-.3 1.3s.2 1 .6 1.6c.3.6.8 1 1.5 1.5a9 9 0 0 0 10.5-.2c1.6-1 2.4-2.3 2.4-3.7 0-1.4-.7-2.3-2-2.8-.7-.2-2.3-.3-4.9-.4-2.6 0-4.2-.1-5-.2l-1 1-1 1M66.5 19l5.2-.3.6.1.3.7.1 1.1v.6H67.8l.3.5.3.8c.2.4.2 1 .2 1.7s-.1 1.5-.5 2.4c-.4.8-1 1.5-1.6 2.2a8.9 8.9 0 0 1-8.4 1.7 31.2 31.2 0 0 0-1.7 1.1c-.8.5-1.2 1-1.2 1.4 0 1 1.8 1.7 5.5 1.7s6 .1 7.2.3a5 5 0 0 1 2.7 1.3c1 1 1.5 2.2 1.5 3.5 0 1-.5 2.2-1.4 3.4-1.7 2-4.2 3.4-7.6 4.1-1.2.3-2.5.4-3.8.4-2.5 0-4.4-.5-5.6-1.4-1.3-.8-2-2-2-3.2 0-.7.2-1.2.5-1.7l1.3-1.3 1.6-1.2c.6-.4 1.2-1 1.7-1.7a6 6 0 0 1-3.2-1.2c-.9-.7-1.3-1.3-1.3-2s.2-1.2.5-1.5l1.3-.8 1.6-.6c.6-.2 1-.5 1.5-.8a7.8 7.8 0 0 1-3.4-2.4c-.8-1-1.2-2-1.2-3.3 0-2.2.8-4 2.4-5.4a8.7 8.7 0 0 1 6-2.1c2.2 0 4 .6 5.4 1.9M79.6 20l.1.6.2-.1.8-1c1.5-1.6 3-2.4 4.5-2.4 2 0 3.4.5 4.3 1.3 1.2 1.2 1.7 3 1.7 5.7v8.1c0 1.3.7 2 2.1 2.3.7 0 1 .2 1 .4s-.1.3-.2.3h-8.7c-.2 0-.2-.1-.2-.3 0-.2.3-.4.9-.4 1.4-.2 2-1 2-2.3v-8c0-1.8 0-3-.3-3.6-.5-1.2-1.6-1.8-3.3-1.8-1 0-2 .5-3.2 1.3-1.2.9-1.7 1.9-1.7 2.9v9.2c0 1.3.7 2 2 2.3.7 0 1 .2 1 .4s0 .3-.2.3h-8.7c-.1 0-.2-.1-.2-.3 0-.2.3-.4.9-.4 1.4-.2 2.1-1 2.1-2.3V8c0-.6-.3-1-.9-1.2l-.8-.2-.7-.1a.9.9 0 0 1-.4-.2V6c0-.1 0-.3.3-.4l5-2.3.2-.1c.2 0 .4.1.4.4ZM101 20.2c-.1 0-.2 0-.2.2V31c0 .8.2 1.4.6 1.9.3.4.8.6 1.3.6s1 0 1.4-.2a29.4 29.4 0 0 0 1.8-1.2l.6-.2.3.1v.6c-1.7 2-3.2 3-4.6 3-1.5 0-2.6-.4-3.3-1.3-.7-1-1.1-2-1.1-3.3V20h-1.5c-.3 0-.5 0-.5-.3v-.4a21.7 21.7 0 0 0 3.4-3l1-1.2c.4-.5.8-.8 1-.8.2 0 .3.1.3.3l-.7 2.6c0 .2.2.3.4.3h5c.5 0 .8.9.8 2.5h-.2ZM134.2 11.6c-.5 0-1-.2-1.4-.5-.4-.3-.6-.8-.6-1.4 0-.6.2-1.1.6-1.4a2 2 0 0 1 1.4-.6c.5 0 1 .2 1.3.7.4.4.6.8.6 1.3s-.2 1-.5 1.3c-.4.4-.8.6-1.4.6m-4 23.6c-.2 0-.2-.1-.2-.3 0-.2.3-.4.9-.4 1.4-.2 2-1 2-2.3V22c0-.5-.2-1-.8-1.1l-.9-.3-.7-.1a.9.9 0 0 1-.3-.2V20c0-.1 0-.2.2-.3l5-2.4.3-.1c.2 0 .3.2.3.5v14.6c0 1.3.7 2 2.1 2.3.6 0 1 .2 1 .4s-.1.3-.2.3ZM155 24.2a7 7 0 0 0-1.3-4.5 4.4 4.4 0 0 0-3.6-1.7c-2 0-3.4.9-4.2 2.7a8.7 8.7 0 0 0 .7 7c1 1.6 2.2 2.3 3.7 2.3s2.7-.5 3.5-1.5c.9-1 1.3-2.5 1.3-4.3m-9.7 15.1-.7 1c-.2.3-.3.8-.3 1.3s.2 1 .5 1.6c.4.6.9 1 1.5 1.5a9 9 0 0 0 10.5-.2c1.6-1 2.4-2.3 2.4-3.7 0-1.4-.7-2.3-2-2.8-.6-.2-2.2-.3-4.8-.4-2.6 0-4.3-.1-5-.2l-1 1c-.5.3-.8.6-1 1M156 19l5.3-.3.5.1.3.7.2 1.1-.1.6h-4.7l.2.5.4.8.2 1.7c0 .7-.2 1.5-.6 2.4-.3.8-.9 1.5-1.6 2.2a8.9 8.9 0 0 1-8.4 1.7 31.2 31.2 0 0 0-1.7 1.1c-.8.5-1.2 1-1.2 1.4 0 1 1.9 1.7 5.5 1.7 3.7 0 6.1.1 7.3.3a5 5 0 0 1 2.7 1.3c1 1 1.5 2.2 1.5 3.5 0 1-.5 2.2-1.5 3.4-1.6 2-4.1 3.4-7.5 4.1-1.2.3-2.5.4-3.9.4-2.4 0-4.3-.5-5.6-1.4-1.3-.8-2-2-2-3.2 0-.7.3-1.2.6-1.7l1.2-1.3 1.7-1.2c.6-.4 1.1-1 1.7-1.7a6 6 0 0 1-3.2-1.2c-1-.7-1.4-1.3-1.4-2s.2-1.2.6-1.5l1.3-.8 1.6-.6 1.4-.8a7.8 7.8 0 0 1-3.4-2.4c-.7-1-1.1-2-1.1-3.3 0-2.2.8-4 2.4-5.4a8.6 8.6 0 0 1 5.9-2.1c2.2 0 4 .6 5.4 1.9M167.9 11.6c-.6 0-1-.2-1.4-.5-.4-.3-.7-.8-.7-1.4 0-.6.2-1.1.6-1.4a2 2 0 0 1 1.4-.6c.6 0 1 .2 1.4.7.4.4.6.8.6 1.3s-.2 1-.6 1.3c-.3.4-.8.6-1.3.6m-4 23.6c-.2 0-.3-.1-.3-.3 0-.2.3-.4 1-.4 1.3-.2 2-1 2-2.3V22c0-.5-.2-1-.8-1.1l-.9-.3-.7-.1a.9.9 0 0 1-.3-.2l-.1-.3.3-.3 5-2.4.3-.1c.2 0 .3.2.3.5v14.6c0 1.3.7 2 2.1 2.3.6 0 1 .2 1 .4s-.1.3-.3.3ZM179.8 20.2l-.1.2V31c0 .8.2 1.4.5 1.9.4.4.8.6 1.3.6.6 0 1 0 1.4-.2a29.4 29.4 0 0 0 1.8-1.2l.7-.2.3.1-.1.6c-1.6 2-3.1 3-4.6 3-1.4 0-2.5-.4-3.2-1.3-.8-1-1.2-2-1.2-3.3V20h-1.4c-.4 0-.6 0-.6-.3l.1-.4a21.7 21.7 0 0 0 3.4-3l1-1.2c.4-.5.7-.8 1-.8.2 0 .3.1.3.3l-.7 2.6c0 .2.1.3.3.3h5c.6 0 .8.9.8 2.5h-.1Z" /> <path fill="currentColor" d="M12.8 30.4c1.4 1.5 3 2.5 4.6 3 2 .7 3.6.3 4.9-1a4.4 4.4 0 0 0 1.1-4.6 10 10 0 0 0-2.7-4.4c-2.7-2.7-5.2-3.8-7.6-3.2a5 5 0 0 0-2.4 1.3c-1.3 1.3-1.6 2.7-1.1 4.3.4 1.3 1.4 2.8 3 4.5ZM8.9 8.5c.2-.1.3-.1.4 0 .2.1 0 .8-.3 2a28.6 28.6 0 0 0-1 5.3c-.4 3.5-.1 5.8.8 6.9l.2-.4.3-.7 1.2-1.5c.7-.7 1.6-1.2 2.7-1.6a8.8 8.8 0 0 1 9.6 2.1 8.9 8.9 0 0 1 .1 12.7 7.2 7.2 0 0 1-6.5 2.1c-2.5-.4-4.8-1.5-6.7-3.5a13.1 13.1 0 0 1-4-8.7A37 37 0 0 1 8.3 9.6l.6-1M121.5 31.4c1.6-1.6 2.6-3.1 3-4.5.5-1.5.1-3-1.1-4.2a5 5 0 0 0-2.4-1.4c-2.4-.5-5 .5-7.6 3.3a10 10 0 0 0-2.8 4.3 4.4 4.4 0 0 0 1.2 4.7c1.3 1.3 3 1.6 4.9 1 1.6-.6 3.2-1.6 4.6-3Zm4.3-20.7a37 37 0 0 1 2.6 13.7 13.1 13.1 0 0 1-10.7 12.1c-2.6.4-4.8-.3-6.5-2a8.9 8.9 0 0 1 .1-12.7 9 9 0 0 1 9.6-2.2 7.5 7.5 0 0 1 3.9 3.1 16.4 16.4 0 0 1 .4 1.1c1-1 1.3-3.3 1-6.9a39.3 39.3 0 0 0-1.5-7.3h.5l.6 1.1" /> </svg></a></div>
+  <nav aria-label="Footer"><a href="#">Help</a><a href="#">Press Kit</a><a href="#">Privacy Policy</a><a href="#">Terms of Use</a><a href="#">Support</a><a href="https://brightdigit.com">brightdigit.com</a></nav>
+  <p class="copy">© 2026 BrightDigit. All rights reserved.</p>
+</div></footer>
+</body>
+</html>
