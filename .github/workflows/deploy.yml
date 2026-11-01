@@ -1,0 +1,65 @@
+name: Deploy to GitHub Pages
+
+# CI runs on pull_request (any base branch, so stacked PRs get checked). The
+# only push trigger is the Pages deploy from main (spec §15).
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+        env:
+          SHARP_IGNORE_GLOBAL_LIBVIPS: '1'
+
+      # Pull requests build like `make build` (config guards only warn).
+      # Pushes to main and manual runs build like `make build-production`
+      # (SITE_DEPLOY=1), so a placeholder TestFlight link fails the deploy.
+      - name: Build site
+        run: npm run build
+        env:
+          SITE_DEPLOY: ${{ github.event_name == 'pull_request' && '0' || '1' }}
+
+      - name: Check internal links
+        run: npm run check:links
+
+      - name: Upload artifact
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: './dist'
+
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
