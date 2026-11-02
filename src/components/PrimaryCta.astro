@@ -6,7 +6,10 @@ import AppStoreBadge from './AppStoreBadge.astro';
 import TestFlightButton from './TestFlightButton.astro';
 
 interface Props {
-  /** `hero`: filled TestFlight button, 56 px badge. `footer`: outlined button, 48 px badge. */
+  /**
+   * `hero`: the white-pill TestFlight button and the white badge (56 px) on
+   * the dark hero card. `footer`: the outlined button and the scheme badge (48 px).
+   */
   placement?: 'hero' | 'footer';
   class?: string;
 }
@@ -15,5 +18,9 @@ const { placement = 'hero', class: className } = Astro.props;
 const hero = placement === 'hero';
 ---
 
-{RELEASE_STATE === 'beta' && <TestFlightButton variant={hero ? 'filled' : 'outlined'} class={className} />}
-{RELEASE_STATE === 'released' && APP_STORE_ID && <AppStoreBadge height={hero ? 56 : 48} class={className} />}
+{RELEASE_STATE === 'beta' && <TestFlightButton variant={hero ? 'hero' : 'outlined'} class={className} />}
+{
+  RELEASE_STATE === 'released' && APP_STORE_ID && (
+    <AppStoreBadge height={hero ? 56 : 48} artwork={hero ? 'white' : 'auto'} class={className} />
+  )
+}

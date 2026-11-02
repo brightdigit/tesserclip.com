@@ -8,10 +8,12 @@ import NewTabNote from './NewTabNote.astro';
 interface Props {
   /** Badge height in px. Apple's onscreen minimum is 40. Hero 56, footer 48, nav 40. */
   height?: 40 | 48 | 56;
+  /** `auto` follows the colour scheme; `white` is for the dark hero card, in both schemes. */
+  artwork?: 'auto' | 'white';
   class?: string;
 }
 
-const { height = 48, class: className } = Astro.props;
+const { height = 48, artwork = 'auto', class: className } = Astro.props;
 // The artwork is 156.10054 × 40.
 const width = Math.round((156.10054 / 40) * height);
 ---
@@ -23,9 +25,11 @@ const width = Math.round((156.10054 / 40) * height);
   class:list={['inline-block shrink-0 rounded-lg transition-opacity hover:opacity-80', className]}
 >
   <picture>
-    <source srcset="/badges/download-on-the-mac-app-store-white.svg" media="(prefers-color-scheme: dark)" />
+    {artwork === 'auto' && (
+      <source srcset="/badges/download-on-the-mac-app-store-white.svg" media="(prefers-color-scheme: dark)" />
+    )}
     <img
-      src="/badges/download-on-the-mac-app-store-black.svg"
+      src={`/badges/download-on-the-mac-app-store-${artwork === 'white' ? 'white' : 'black'}.svg`}
       alt="Download on the Mac App Store"
       width={width}
       height={height}

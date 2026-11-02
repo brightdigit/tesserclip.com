@@ -1,0 +1,16 @@
+---
+// A 32 px line tesseract in brand-accent (spec §7): above the breadcrumbs on
+// both help pages and above the h1 on Support. Decorative; it never repeats
+// inside content.
+import Mark from '../assets/tesseract/tesseract-mark.svg';
+
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<span class:list={['mb-3.5 block h-8 w-8 text-brand-accent', className]} aria-hidden="true">
+  <Mark width={32} height={32} class="block h-8 w-8" aria-hidden="true" />
+</span>

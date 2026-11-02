@@ -2,7 +2,7 @@
 // 404 (spec §9.8, design 10-404). GitHub Pages serves dist/404.html at any
 // depth, so every link and asset URL here stays root-absolute. noindex, and the
 // sitemap filter in astro.config.mjs leaves it out.
-import NotFoundClipboardIcon from '../components/icons/NotFoundClipboardIcon.astro';
+import LineTesseract from '../components/LineTesseract.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
 const title = 'Page not found – TesserClip';
@@ -13,7 +13,7 @@ const button = 'inline-flex items-center gap-2 rounded-full px-[22px] py-[11px] 
 <BaseLayout title={title} description={description} noindex>
   <section class="pt-[120px] pb-[140px] text-center">
     <div class="mx-auto max-w-2xl px-5 md:px-6">
-      <NotFoundClipboardIcon class="mx-auto mb-6 h-[72px] w-[72px] text-brand-muted [stroke-width:1.2]" />
+      <LineTesseract variant="empty" class="mx-auto mb-6 block h-[132px] w-[132px] text-brand-accent" />
       <p class="mb-3 text-[15px] font-semibold tracking-[0.08em] text-brand-accent">404</p>
       <h1 class="text-[34px] leading-[1.08] font-bold tracking-[-0.028em] md:text-5xl">This page doesn’t contain text</h1>
       <p class="mx-auto mt-4 mb-9 max-w-[480px] text-lg leading-normal text-brand-muted md:text-[21px]">

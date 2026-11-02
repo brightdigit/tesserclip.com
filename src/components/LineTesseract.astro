@@ -1,0 +1,17 @@
+---
+// The 2D line tesseract (spec §7): an oblique projection drawn in
+// currentColor. `filled` has a tinted inner cell (PrivacyCard); `empty` has a
+// dashed, empty inner cell (404). Always decorative.
+import Empty from '../assets/tesseract/tesseract-line-empty.svg';
+import Filled from '../assets/tesseract/tesseract-line.svg';
+
+interface Props {
+  variant?: 'filled' | 'empty';
+  class?: string;
+}
+
+const { variant = 'filled', class: className } = Astro.props;
+const Art = variant === 'empty' ? Empty : Filled;
+---
+
+<Art class={className} aria-hidden="true" />

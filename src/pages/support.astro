@@ -8,6 +8,7 @@ import Kbd from '../components/Kbd.astro';
 import IconTile from '../components/IconTile.astro';
 import MenuPath from '../components/MenuPath.astro';
 import Prose from '../components/Prose.astro';
+import TesseractMark from '../components/TesseractMark.astro';
 import TopicCard from '../components/TopicCard.astro';
 import SupportBookIcon from '../components/icons/SupportBookIcon.astro';
 import ClipboardIcon from '../components/icons/ClipboardIcon.astro';
@@ -37,6 +38,7 @@ const h2 = 'text-[30px] tracking-[-0.022em]';
 <BaseLayout title={title} description={description}>
   <div class="mx-auto max-w-[760px] px-5 pb-24 md:px-6">
     <div class="pt-14 pb-2 md:pt-[72px]">
+      <TesseractMark />
       <h1 class="text-[34px] leading-[1.08] font-bold tracking-[-0.028em] md:text-5xl">Support</h1>
       <p class="mt-[14px] text-lg leading-normal text-brand-muted md:text-[21px]">
         Find an answer in the help, or get in touch. We read every message.

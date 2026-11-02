@@ -22,3 +22,4 @@ This directory is the memory store for tesserclip.com. It’s versioned in git, 
 - [Press kit zip](press-kit-zip.md) — page and zip README share src/lib/press.ts + press.json; the script regex-reads config.ts; icon renders are committed (`--force` to redo)
 - [In-text links](in-text-links.md) — one underline treatment: `link-inline` on markup links, `text-links` on Markdown wrappers; standalone › links stay hover-only
 - [Tesseract design renders](tesseract-design-renders.md) — the 2026-11-02 mockups come from dist/; RENDER-ONLY Inter block; re-export the OG image on a Mac; full-page renders skip lazy/async images
+- [How the Tesseract restyle is built](tesseract-restyle-build.md) — tokens and components the mockup CSS became; match the PNGs, not the mockup class list; help-band muted grey

@@ -1,7 +1,7 @@
 ---
-// The three tinted privacy points at the top of /privacy (spec §7, §9.4):
-// Your text stays on your Mac · No account · No tracking. Icons are copied
-// from the design HTML.
+// The three privacy points at the top of /privacy (spec §7, §9.4), stacked
+// inside the compact PrivacyCard: Your text stays on your Mac · No account ·
+// No tracking. Icons are copied from the design HTML.
 interface Props {
   class?: string;
 }
@@ -11,7 +11,7 @@ const { class: className } = Astro.props;
 
 <ul
   class:list={[
-    'mt-8 mb-2 grid gap-3.5 rounded-2xl border border-brand-tint-2 bg-brand-tint px-6 py-6 text-[17px] text-brand-text md:px-7',
+    'grid gap-3.5 text-[17px] text-brand-text',
     className,
   ]}
 >

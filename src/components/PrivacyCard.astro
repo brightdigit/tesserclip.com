@@ -1,0 +1,62 @@
+---
+// The privacy points in a rounded card with the line tesseract on the right
+// (spec §7). brand-surface in light mode; black with a purple corner glow in
+// dark mode.
+//   Home (default): the slot holds the h2 and paragraph; the art sits beside
+//     them; the `points` slot (HomePrivacyPoints) runs across underneath.
+//   compact (/privacy/): the slot holds the stacked PrivacySummary list and
+//     the art is 120 px (96 px below md, 72 px on top below 480 px).
+import LineTesseract from './LineTesseract.astro';
+
+interface Props {
+  compact?: boolean;
+  class?: string;
+}
+
+const { compact = false, class: className } = Astro.props;
+---
+
+<div
+  class:list={[
+    'privacy-card relative grid overflow-hidden border border-brand-hairline bg-privacy-card contrast-more:outline contrast-more:outline-brand-text',
+    compact
+      ? 'mt-8 mb-2 items-center gap-4 rounded-[20px] p-6 min-[480px]:grid-cols-[minmax(0,1fr)_96px] md:grid-cols-[minmax(0,1fr)_120px] md:gap-6 md:px-8 md:py-7'
+      : 'gap-5 rounded-[28px] px-[22px] py-8 md:grid-cols-[minmax(0,1fr)_240px] md:items-center md:gap-12 md:rounded-[32px] md:px-16 md:pt-16 md:pb-14',
+    className,
+  ]}
+>
+  <div><slot /></div>
+  <div
+    class:list={[
+      'flex text-privacy-art',
+      compact ? '-order-1 justify-start min-[480px]:order-none min-[480px]:justify-center' : '-order-1 justify-center md:order-none',
+    ]}
+  >
+    <LineTesseract
+      class={compact
+        ? 'h-[72px] w-[72px] min-[480px]:h-24 min-[480px]:w-24 md:h-[120px] md:w-[120px]'
+        : 'h-[132px] w-[132px] md:h-60 md:w-60'}
+    />
+  </div>
+  {Astro.slots.has('points') && <div class="md:col-span-full"><slot name="points" /></div>}
+</div>
+
+<style>
+  @media (prefers-color-scheme: dark) {
+    .privacy-card::after {
+      content: '';
+      position: absolute;
+      right: -140px;
+      top: -140px;
+      width: 520px;
+      height: 520px;
+      background: radial-gradient(closest-side, rgb(74 29 122 / 0.5), transparent);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .privacy-card > :global(*) {
+      position: relative;
+      z-index: 1;
+    }
+  }
+</style>
