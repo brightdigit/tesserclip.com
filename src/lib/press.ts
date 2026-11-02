@@ -16,10 +16,14 @@ export interface PressData {
     category: string;
     website: string;
   };
-  icons: { name: string; svg: string; png: string; alt: string }[];
+  /** The Icon Composer exports, served from public/press/icons/ and zipped under icons/. */
+  icons: { name: string; file: string; alt: string }[];
   iconLabel: string;
-  iconNote: string;
   iconGuidelines: string[];
+  /** Served from public/press/key-art/ and zipped under key-art/. */
+  keyArt: { file: string; title: string; label: string; alt: string };
+  /** “The name”: the only place the site explains tesser + clip (spec §11). */
+  name: { title: string; text: string };
   screenshots: { file: string; caption: string }[];
   colors: { name: string; hex: string; use: string }[];
 }
@@ -113,10 +117,12 @@ export function renderPressReadme(press: PressData, info: ReleaseInfo): string {
     press.descriptions.long,
     '',
     heading('Contents', '-'),
-    'icons/        App icon: SVG, plus PNG renders at 1024 and 512 px (default and dark)',
+    `icons/        App icon: the ${press.icons.length} Icon Composer exports at 1024 px, plus 512 px renders of Default and Dark (PNG)`,
+    `key-art/      ${press.keyArt.title} key art, ${press.keyArt.label.replace(' · ', ' (')})`,
     'screenshots/  App screenshots (PNG)',
     '',
-    press.iconNote,
+    heading(press.name.title, '-'),
+    press.name.text,
     '',
     heading('Icon usage guidelines', '-'),
     ...press.iconGuidelines.map((line) => `- ${line}`),
