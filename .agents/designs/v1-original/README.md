@@ -1,6 +1,8 @@
-# tesserclip.com design mockups
+# tesserclip.com design mockups (v1, superseded)
 
-Static mockups for the TesserClip marketing and help site. Each screen is one standalone HTML file with inline CSS and no external requests, plus a PNG rendered with Playwright (Chromium). Local images live in `assets/`. The production build will be **Astro + Tailwind on GitHub Pages**, like month.bar and atleast.app, so the tokens and spacing below map straight onto Tailwind.
+> **Archived 2026-11-02.** These are the original v1 mockups, kept for reference. The current designs are the Tesseract restyle in [`../README.md`](../README.md) (issue #17). Asset paths now point one level up, at `../assets/`. Nothing here is normative any more.
+
+Static mockups for the TesserClip marketing and help site. Each screen is one standalone HTML file with inline CSS and no external requests, plus a PNG rendered with Playwright (Chromium). Local images live in `../assets/`. The production build will be **Astro + Tailwind on GitHub Pages**, like month.bar and atleast.app, so the tokens and spacing below map straight onto Tailwind.
 
 ## Screens
 
