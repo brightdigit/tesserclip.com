@@ -15,7 +15,7 @@ A running log of Leo’s corrections and standing always/never directives for th
 - 2026-10-31 — The site launches in **beta** (`RELEASE_STATE = 'beta'`). `comingSoon` stays supported in code but isn’t the default.
 - 2026-10-31 — Agents open PRs and never merge them. Leo reviews and merges.
 - 2026-10-31 — Don’t add Claude GitHub workflows (`claude.yml`, `claude-code-review.yml`). The only workflows are deploy and Lighthouse.
-- 2026-10-31 — The TestFlight link is a placeholder constant in `src/config.ts`. A production or deploy build must fail while `RELEASE_STATE === 'beta'` and the link is still the placeholder. Filling it in is part of the maintainer go-live issue.
+- 2026-11-03 — The public TestFlight link is `https://testflight.apple.com/join/WX95KgBZ`, set in `TESTFLIGHT_URL` in `src/config.ts` (it works once Apple approves the beta). Keep the placeholder guard: a production or deploy build must fail if `RELEASE_STATE === 'beta'` and the link is ever reset to `TESTFLIGHT_PLACEHOLDER`.
 - 2026-10-31 — Help URLs baked into the app (`/help`, `/help/clipboard-permission`) must never 404. Don’t move or rename them, and keep them in the link check’s required paths.
 - 2026-10-31 — CI runs on `pull_request` only. The one push trigger is the GitHub Pages deploy on `main`.
 - 2026-10-31 — Support is email only (`support@tesserclip.com`) while `REPO_PUBLIC` is `false`. Press reuses the support address, and there is no `press@`.
