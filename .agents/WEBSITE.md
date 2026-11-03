@@ -447,15 +447,16 @@ Designs: the `01-home-*` renders show beta. There’s no released-state render o
 
 - **URL:** `/` · **Design:** `01-home.html`, with `01-home-1440-*`, `01-home-1440x900-*`, `01-home-1280x800-*` and `01-home-390-*` (light and dark)
 - **Title:** `TesserClip: Fix copied text before you paste it`
-- **Description:** `TesserClip opens straight to the text you last copied, in a plain-text editor, so you can fix it before you paste it. For macOS 27.`
+- **Description:** `Copied text from a browser, a terminal or an AI agent? TesserClip opens straight to it in a plain-text editor, so you can fix it before you paste. For macOS 27.`
 
 | # | Section | Content |
 |---|---|---|
-| 1 | Hero | `TesseractHero` (dark in both schemes). Copy, in order: pill (§8); the icon (72 px, Default) and h1 “TesserClip” on one row; tagline “Fix copied text before you paste it.”; lead “TesserClip opens straight to whatever you last copied, in a plain‑text editor. Edit it, copy it, and paste it where it belongs.”; the hero CTA (§8); the line under the CTA (§8). The static tesseract art is on the right at `lg` and up, and under the CTA below `lg` |
+| 1 | Hero | `TesseractHero` (dark in both schemes). Copy, in order: pill (§8); the icon (72 px, Default) and h1 “TesserClip” on one row; tagline “Fix copied text before you paste it.”; lead “Copied something from a browser, a terminal or an AI agent? TesserClip opens straight to it in a plain‑text editor. Fix it, copy it, and paste it where it belongs.”; the hero CTA (§8); the line under the CTA (§8). The static tesseract art is on the right at `lg` and up, and under the CTA below `lg` |
 | 2 | Window room | `WindowRoom`, straight after the hero with **no heading**, so it shows on the first screen. `01-editor-window.png`, alt text: “A TesserClip window showing copied release notes, ready to edit.” The section is labelled “TesserClip window” (`aria-label`) |
+| 2b | Copy sources (bg band, no top padding) | h2 “From the browser, the terminal or an AI agent.”, lead “What you copy is rarely ready to paste. Fix it in TesserClip first, then paste it where it’s going.”, then three `FeatureCard`s: From a web page (`browser`) · From the terminal (`terminal`) · From an AI agent (`agent`) |
 | 3 | Features (surface band) | h2 “Made for the moment between copy and paste.” and its lead, then a 3 × 2 grid of six `FeatureCard`s with `IconTile` line icons: Opens to your last copy · Every window is its own draft · A plain‑text editor · Copy All ⇧⌘C · Asks before losing edits · Knows when there’s new text (copy from the design) |
 | 4 | Safe edits (bg band) | h2 “Your edits are safe until they’re copied.”, the paragraph, and two icon bullets (Quit with ⌘Q… / Already copied your edits?…). Right side: `04-discard-alert-window.png` in a `ProjectedFrame`, **at least 50 % of the row’s width** at `md` and up (a 4∶8 grid). Alt text: “The “Discard your edits?” sheet, with Cancel and Discard buttons.” |
-| 5 | How it works (surface band) | h2 “How it works”, lead “No more pasting into TextEdit just to fix a typo.”, and four `StepCard`s with numerals: Copy (⌘C) · Open TesserClip (⌘Tab) · Fix it (⌘Z ⌘F) · Copy it back (⇧⌘C ⌘V) |
+| 5 | How it works (surface band) | h2 “How it works”, lead “No more pasting into TextEdit just to fix a typo.”, and four `StepCard`s with numerals: Copy (⌘C, “Copy text in a browser, a terminal, an AI chat or any other app.”) · Open TesserClip (⌘Tab) · Fix it (⌘Z ⌘F) · Copy it back (⇧⌘C ⌘V) |
 | 6 | Privacy (bg band) | `PrivacyCard`: h2 “Your text stays on your Mac.”, the paragraph, the line tesseract, and the three `PrivacySummary` points. “No tracking” links “Privacy Policy ›” to `/privacy/` |
 | 7 | Facts strip | Requires macOS 27 or later · (§8 middle item) · “Read the TesserClip Help ›” → `/help/` |
 | 8 | Footer | Shared |
@@ -468,6 +469,8 @@ Designs: the `01-home-*` renders show beta. There’s no released-state render o
 Changes from the design: none, beyond wiring the CTAs to config.
 
 Changes from v1 (2026-11-02, issue #17): the 120 px centred icon became the 72 px icon beside the h1; the hero is a dark card with the static tesseract; the stage became the window room and moved directly under the hero; the step circles became numerals; the safe-edits screenshot is larger; the privacy section is the `PrivacyCard`. The copy is unchanged.
+
+Changes from the design (2026-11-03): the copy leans into where text comes from (browsers, terminals and AI agents). That means the hero lead, the meta description, step 1, the new copy-sources section (row 2b) and the press long description. The design PNGs predate this, so this section is new compared with them.
 
 ### 9.2 Help index
 
