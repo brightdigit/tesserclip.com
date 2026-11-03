@@ -1,0 +1,40 @@
+---
+// Renders src/data/shortcuts.ts as one table per menu group (spec §7), in two
+// columns on md and up. Each command is a row header (<th scope="row">).
+import { SHORTCUT_GROUPS } from '../data/shortcuts';
+import Kbd from './Kbd.astro';
+
+const columns = [1, 2].map((column) => SHORTCUT_GROUPS.filter((group) => group.column === column));
+---
+
+<div class="grid gap-x-6 md:grid-cols-2">
+  {
+    columns.map((groups) => (
+      <div>
+        {groups.map((group) => (
+          <table class="mt-2 mb-6 w-full border-separate border-spacing-0 overflow-hidden rounded-[14px] border border-brand-border text-base">
+            <caption class="pb-2.5 text-left text-[15px] font-semibold text-brand-text">{group.title}</caption>
+            <tbody>
+              {group.shortcuts.map((shortcut) => (
+                <tr class="group/row">
+                  <th
+                    scope="row"
+                    class:list={[
+                      'border-b border-brand-hairline px-4.5 py-3 text-left align-top group-last/row:border-b-0',
+                      shortcut.emphasis ? 'font-semibold text-brand-text' : 'font-normal text-brand-text/85',
+                    ]}
+                  >
+                    {shortcut.command}
+                  </th>
+                  <td class="border-b border-brand-hairline px-4.5 py-3 text-right whitespace-nowrap group-last/row:border-b-0">
+                    <Kbd keys={shortcut.keys} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ))}
+      </div>
+    ))
+  }
+</div>

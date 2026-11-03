@@ -1,0 +1,17 @@
+---
+// One step of a HowToSteps list. The number comes from a CSS counter.
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<li
+  class="relative m-0 pb-7 pl-14 before:absolute before:top-0 before:left-0 before:flex before:h-9 before:w-9 before:items-center before:justify-center before:rounded-full before:bg-brand-accent-strong before:text-base before:font-semibold before:text-white not-last:after:absolute not-last:after:top-11 not-last:after:bottom-1.5 not-last:after:left-[17.5px] not-last:after:w-px not-last:after:bg-brand-border"
+>
+  <h3 class="mt-1.25 mb-1.5 text-[19px] text-brand-text">{title}</h3>
+  <div class="text-[17px] leading-[1.55] text-brand-muted [&>p]:m-0">
+    <slot />
+  </div>
+</li>

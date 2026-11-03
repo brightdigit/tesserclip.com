@@ -10,6 +10,9 @@ const help = defineCollection({
     title: z.string(),
     description: z.string(),
     breadcrumb: z.string(),
+    // The page's h1 and lead, shown by HelpLayout (#3).
+    heading: z.string(),
+    lead: z.string(),
     order: z.number(),
     related: z.array(z.object({ label: z.string(), href: z.string() })).optional(),
   }),
