@@ -1,15 +1,19 @@
 ---
-// A <details> card with a +/− marker (spec §7). Works with the keyboard and
-// without JS. The answer goes in the slot.
+// A <details> card with a +/− marker (spec §7), used on /help and /support.
+// Works with the keyboard and without JS. The answer goes in the slot; links
+// in it get the shared in-text underline.
+//
+//   <FaqItem question="Why is my new window empty?" open><p>…</p></FaqItem>
 interface Props {
   question: string;
   open?: boolean;
+  class?: string;
 }
 
-const { question, open = false } = Astro.props;
+const { question, open = false, class: className } = Astro.props;
 ---
 
-<details class="group my-3 rounded-2xl border border-brand-border bg-brand-surface" open={open}>
+<details class:list={['group my-3 rounded-2xl border border-brand-border bg-brand-surface', className]} open={open}>
   <summary
     class="flex cursor-pointer list-none justify-between gap-4 rounded-2xl px-5.5 py-4.5 text-[17px] font-medium text-brand-text [&::-webkit-details-marker]:hidden"
   >
@@ -18,7 +22,7 @@ const { question, open = false } = Astro.props;
       ><span class="group-open:hidden">+</span><span class="hidden group-open:inline">−</span></span
     >
   </summary>
-  <div class="px-5.5 pb-5 text-base leading-[1.6] text-brand-muted [&_p+p]:mt-2.5">
+  <div class="text-links px-5.5 pb-5 text-base leading-[1.6] text-brand-muted [&_p+p]:mt-2.5">
     <slot />
   </div>
 </details>

@@ -41,7 +41,7 @@ import WindowsIcon from '../../components/icons/WindowsIcon.astro';
 4. Click **Copy All** in the toolbar, or press <Kbd keys="⇧⌘C" />. You can also select some text and press <Kbd keys="⌘C" />.
 5. Switch back to the other app with <Kbd keys="⌘Tab" />, or hide TesserClip with <Kbd keys="⌘H" />, and paste with <Kbd keys="⌘V" />.
 
-<NoteCallout><ClipboardIcon slot="icon" />The first time you open TesserClip, macOS may need your permission before TesserClip can read the clipboard. <a href="/help/clipboard-permission/" class="text-brand-accent underline decoration-brand-accent/40 underline-offset-[3px] hover:decoration-current">Allow TesserClip to read the clipboard<ChevronIcon /></a></NoteCallout>
+<NoteCallout><ClipboardIcon slot="icon" />The first time you open TesserClip, macOS may need your permission before TesserClip can read the clipboard. <a href="/help/clipboard-permission/" class="link-inline">Allow TesserClip to read the clipboard<ChevronIcon /></a></NoteCallout>
 
 <HelpHeading id="windows"><WindowsIcon slot="icon" />Windows and drafts</HelpHeading>
 
@@ -93,7 +93,7 @@ macOS asks before an app reads the clipboard on its own. Allow TesserClip once i
 <HelpHeading id="faq"><QuestionIcon slot="icon" />Questions</HelpHeading>
 
 <FaqItem question="Why is my new window empty?" open>
-  <p>Either the clipboard doesn’t contain text, or TesserClip doesn’t have permission to read it yet. You can paste with <Kbd keys="⌘V" /> any time. To let TesserClip read the clipboard, see <a href="/help/clipboard-permission/" class="text-brand-accent underline decoration-brand-accent/40 underline-offset-[3px] hover:decoration-current">Clipboard permission</a>.</p>
+  <p>Either the clipboard doesn’t contain text, or TesserClip doesn’t have permission to read it yet. You can paste with <Kbd keys="⌘V" /> any time. To let TesserClip read the clipboard, see <a href="/help/clipboard-permission/" class="link-inline">Clipboard permission</a>.</p>
 </FaqItem>
 <FaqItem question="I copied something new. Why didn’t my window change?">
   <p>That’s on purpose: a window never replaces the text you’re working on. Click <strong class="font-semibold text-brand-text">New Window from Clipboard</strong> or press <Kbd keys="⌘N" /> to open the new text in its own window.</p>
@@ -113,5 +113,5 @@ macOS asks before an app reads the clipboard on its own. Allow TesserClip once i
 
 <div class="mt-12 rounded-2xl border border-brand-border bg-brand-surface p-8 text-center">
   <h3 class="mb-1.5 text-xl">Still need help?</h3>
-  <p class="text-[15px] leading-normal text-brand-muted">Email <a href={`mailto:${SUPPORT_EMAIL}`} class="text-brand-accent underline decoration-brand-accent/40 underline-offset-[3px] hover:decoration-current">{SUPPORT_EMAIL}</a> or visit <a href="/support/" class="text-brand-accent underline decoration-brand-accent/40 underline-offset-[3px] hover:decoration-current">Support</a>.</p>
+  <p class="text-[15px] leading-normal text-brand-muted">Email <a href={`mailto:${SUPPORT_EMAIL}`} class="link-inline">{SUPPORT_EMAIL}</a> or visit <a href="/support/" class="link-inline">Support</a>.</p>
 </div>

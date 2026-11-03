@@ -95,6 +95,34 @@
   }
 }
 
+/* Links in running text (spec §13, Lighthouse link-in-text-block): accent
+   colour plus a soft 1 px underline that turns solid on hover, so colour is
+   never the only signal. Put `link-inline` on an <a> written in markup;
+   `text-links` on a wrapper gives unclassed links (Markdown output) the same. */
+@utility link-inline {
+  color: var(--color-brand-accent);
+  text-decoration-line: underline;
+  text-decoration-thickness: 1px;
+  text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
+  text-underline-offset: 3px;
+  &:hover {
+    text-decoration-color: currentColor;
+  }
+}
+
+@layer components {
+  :where(.text-links) :where(a:not([class])) {
+    color: var(--color-brand-accent);
+    text-decoration-line: underline;
+    text-decoration-thickness: 1px;
+    text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
+    text-underline-offset: 3px;
+  }
+  :where(.text-links) :where(a:not([class])):hover {
+    text-decoration-color: currentColor;
+  }
+}
+
 /* Reduced motion (spec §13): no transitions or animations anywhere. */
 @media (prefers-reduced-motion: reduce) {
   *,

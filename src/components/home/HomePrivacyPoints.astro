@@ -1,7 +1,8 @@
 ---
 // The home privacy band’s three points (spec §9.1 row 6): Nothing leaves your
-// Mac · No account · No tracking. The privacy page’s tinted summary box
-// (PrivacySummary, #4) shares the copy but not the layout; see the PR notes.
+// Mac · No account · No tracking. The privacy page’s PrivacySummary has
+// different copy and layout in the designs (01-home vs 06-privacy), so the two
+// stay separate components.
 import IconTile from '../IconTile.astro';
 import ChevronIcon from '../icons/ChevronIcon.astro';
 import HomeIcon from '../icons/HomeIcon.astro';
@@ -31,7 +32,7 @@ const points: { icon: HomeIconName; title: string; text: string; link?: { href: 
           <p class="text-[15px] leading-normal text-brand-muted">
             {p.text}
             {p.link && (
-              <a href={p.link.href} class="text-brand-accent underline decoration-1 underline-offset-2">
+              <a href={p.link.href} class="link-inline">
                 {p.link.label}<ChevronIcon />
               </a>
             )}

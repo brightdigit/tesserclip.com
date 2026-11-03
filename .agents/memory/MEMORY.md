@@ -20,3 +20,4 @@ This directory is the memory store for tesserclip.com. It’s versioned in git, 
 - [Restate Tailwind’s layer order in `@layer` style blocks](css-layer-order-inline-styles.md) — an inlined `@layer components` block can sort below preflight; prose rules go in `components` with `:where()`
 - [Legal content tokens](legal-content-tokens.md) — `{{SUPPORT_EMAIL}}` in legal Markdown, frontmatter comments, the analytics-copy guard, and why “deleting the app deletes drafts” isn’t claimed
 - [Press kit zip](press-kit-zip.md) — page and zip README share src/lib/press.ts + press.json; the script regex-reads config.ts; icon renders are committed (`--force` to redo)
+- [In-text links](in-text-links.md) — one underline treatment: `link-inline` on markup links, `text-links` on Markdown wrappers; standalone › links stay hover-only

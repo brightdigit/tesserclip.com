@@ -8,6 +8,7 @@ import EyebrowPill from '../components/EyebrowPill.astro';
 import FeatureCard from '../components/FeatureCard.astro';
 import JsonLd from '../components/JsonLd.astro';
 import Kbd from '../components/Kbd.astro';
+import MenuPath from '../components/MenuPath.astro';
 import NewTabNote from '../components/NewTabNote.astro';
 import PrimaryCta from '../components/PrimaryCta.astro';
 import Stage from '../components/Stage.astro';
@@ -110,7 +111,7 @@ const lead = 'text-lg leading-normal text-brand-muted md:text-[21px]';
           another window with <Kbd keys="⌘N" />.
         </FeatureCard>
         <FeatureCard icon="text" title="A plain‑text editor">
-          Rich text arrives as plain text. Smart quotes, dashes and other substitutions stay off until you turn them on in <span class="font-medium whitespace-nowrap text-brand-text">Edit<span aria-hidden="true"> ▸ </span><span class="sr-only">, </span>Substitutions</span>.
+          Rich text arrives as plain text. Smart quotes, dashes and other substitutions stay off until you turn them on in <MenuPath items={['Edit', 'Substitutions']} />.
         </FeatureCard>
         <FeatureCard icon="copy" title="Copy All">
           <Fragment slot="title-after">{' '}<Kbd keys="⇧⌘C" /></Fragment>

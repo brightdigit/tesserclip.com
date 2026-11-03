@@ -2,6 +2,3 @@
 # Remove each entry as its page lands. The checker fails on anything not listed,
 # and never accepts an entry for a required path.
 # An entry with a #fragment (/help/#shortcuts) excuses only that missing id, never the page.
-
-# #5 (support) links the help shortcuts section, which #3 builds. Remove once #3 lands.
-/help/#shortcuts

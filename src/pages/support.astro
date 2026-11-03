@@ -3,19 +3,19 @@
 // Changes from the design: no GitHub Issues card while REPO_PUBLIC is false
 // (D12/D18), and the TestFlight feedback card links to testflight.apple.com.
 import { RELEASE_STATE, REPO_PUBLIC, REPO_URL, SUPPORT_EMAIL } from '../config';
-import SupportFaqItem from '../components/SupportFaqItem.astro';
+import FaqItem from '../components/FaqItem.astro';
 import Kbd from '../components/Kbd.astro';
 import IconTile from '../components/IconTile.astro';
 import MenuPath from '../components/MenuPath.astro';
 import Prose from '../components/Prose.astro';
-import SupportCard from '../components/SupportCard.astro';
+import TopicCard from '../components/TopicCard.astro';
 import SupportBookIcon from '../components/icons/SupportBookIcon.astro';
-import SupportClipboardIcon from '../components/icons/SupportClipboardIcon.astro';
+import ClipboardIcon from '../components/icons/ClipboardIcon.astro';
 import SupportIssueIcon from '../components/icons/SupportIssueIcon.astro';
-import SupportKeyboardIcon from '../components/icons/SupportKeyboardIcon.astro';
+import KeyboardIcon from '../components/icons/KeyboardIcon.astro';
 import SupportKnownIssuesIcon from '../components/icons/SupportKnownIssuesIcon.astro';
 import SupportMailIcon from '../components/icons/SupportMailIcon.astro';
-import SupportQuestionIcon from '../components/icons/SupportQuestionIcon.astro';
+import QuestionIcon from '../components/icons/QuestionIcon.astro';
 import TestFlightGlyph from '../components/icons/TestFlightGlyph.astro';
 import { KNOWN_ISSUES } from '../data/known-issues';
 import BaseLayout from '../layouts/BaseLayout.astro';
@@ -44,38 +44,38 @@ const h2 = 'text-[30px] tracking-[-0.022em]';
     </div>
 
     <div class="mt-10 grid gap-4 md:grid-cols-3">
-      <SupportCard href="/help/" title="TesserClip Help" text="How windows, the editor and shortcuts work." level={2}><SupportBookIcon /></SupportCard>
-      <SupportCard href="/help/clipboard-permission/" title="Clipboard permission" text="Let TesserClip show your copied text." level={2}
-        ><SupportClipboardIcon /></SupportCard
+      <TopicCard href="/help/" title="TesserClip Help" text="How windows, the editor and shortcuts work."><SupportBookIcon /></TopicCard>
+      <TopicCard href="/help/clipboard-permission/" title="Clipboard permission" text="Let TesserClip show your copied text."
+        ><ClipboardIcon /></TopicCard
       >
-      <SupportCard href="/help/#shortcuts" title="Keyboard shortcuts" text="Every command and its keys." level={2}><SupportKeyboardIcon /></SupportCard>
+      <TopicCard href="/help/#shortcuts" title="Keyboard shortcuts" text="Every command and its keys."><KeyboardIcon /></TopicCard>
     </div>
 
     <section aria-labelledby="common-title">
       <div class={sectionHeading} id="common">
-        <IconTile><SupportQuestionIcon /></IconTile>
+        <IconTile><QuestionIcon /></IconTile>
         <h2 id="common-title" class={h2}>Common questions</h2>
       </div>
-      <SupportFaqItem question="Why is my new window empty?">
+      <FaqItem question="Why is my new window empty?">
         <p>
           The clipboard may not contain text, or TesserClip may not have permission to read it. Paste with <Kbd keys="⌘V" />, or <a
             href="/help/clipboard-permission/">allow clipboard access</a
           >.
         </p>
-      </SupportFaqItem>
-      <SupportFaqItem question="What do I need to run TesserClip?">
+      </FaqItem>
+      <FaqItem question="What do I need to run TesserClip?">
         <p>A Mac with macOS 27 or later.</p>
-      </SupportFaqItem>
+      </FaqItem>
       {
         show.joinBetaFaq && (
-          <SupportFaqItem question="How do I join the beta?">
+          <FaqItem question="How do I join the beta?">
             <p>Install TestFlight from the Mac App Store, then open the TesserClip beta link on your Mac.</p>
-          </SupportFaqItem>
+          </FaqItem>
         )
       }
-      <SupportFaqItem question="Where are my drafts stored?">
+      <FaqItem question="Where are my drafts stored?">
         <p>On your Mac, inside TesserClip’s own container. They’re never uploaded. See the <a href="/privacy/">Privacy Policy</a>.</p>
-      </SupportFaqItem>
+      </FaqItem>
     </section>
 
     {
@@ -104,30 +104,31 @@ const h2 = 'text-[30px] tracking-[-0.022em]';
         <h2 id="contact-title" class={h2}>Contact us</h2>
       </div>
       <div class:list={['grid gap-4', contactCount >= 3 ? 'md:grid-cols-3' : 'md:grid-cols-2']}>
-        <SupportCard href={`mailto:${SUPPORT_EMAIL}`} title="Email" text={SUPPORT_EMAIL} action="Write to us"><SupportMailIcon /></SupportCard>
+        <TopicCard href={`mailto:${SUPPORT_EMAIL}`} title="Email" text={SUPPORT_EMAIL} action="Write to us" headingLevel={3}><SupportMailIcon /></TopicCard>
         {
           show.githubCard && (
-            <SupportCard href={issuesUrl(REPO_URL)} title="GitHub Issues" text="Report a bug or request a feature." action="Open an issue" external>
+            <TopicCard href={issuesUrl(REPO_URL)} title="GitHub Issues" text="Report a bug or request a feature." action="Open an issue" external headingLevel={3}>
               <SupportIssueIcon />
-            </SupportCard>
+            </TopicCard>
           )
         }
         {
           show.testflightCard && (
-            <SupportCard
+            <TopicCard
               href={TESTFLIGHT_FEEDBACK_URL}
               title="TestFlight feedback"
               text="Testing the beta? Send feedback and screenshots from TestFlight."
               action="How to send"
               external
+              headingLevel={3}
             >
               <TestFlightGlyph />
-            </SupportCard>
+            </TopicCard>
           )
         }
       </div>
       <div class="mt-7 flex gap-[14px] rounded-[14px] border border-brand-border bg-brand-surface px-5 py-[18px] text-base leading-[1.55]">
-        <SupportQuestionIcon class="mt-px h-[22px] w-[22px] shrink-0 text-brand-accent" />
+        <QuestionIcon class="mt-px h-[22px] w-[22px] shrink-0 text-brand-accent" />
         <p>
           <strong class="font-semibold">Help us help you.</strong> Include your macOS version, TesserClip’s version (choose <MenuPath
             items={['TesserClip', 'About TesserClip']}
