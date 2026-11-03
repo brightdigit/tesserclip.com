@@ -2,7 +2,7 @@
 // <head> contents for every page (spec §12): meta, canonical, Open Graph and
 // Twitter, icons, CSP and the Organization JSON-LD. Pages add their own
 // JSON-LD through BaseLayout's "head" slot.
-import { ANALYTICS, APP_NAME, COMPANY_NAME, COMPANY_URL, OG_IMAGE_URL, SITE_URL, SUPPORT_EMAIL, TAGLINE } from '../config';
+import { ANALYTICS, APP_NAME, SEARCH_INDEXING, COMPANY_NAME, COMPANY_URL, OG_IMAGE_URL, SITE_URL, SUPPORT_EMAIL, TAGLINE } from '../config';
 import JsonLd from './JsonLd.astro';
 
 interface Props {
@@ -54,6 +54,7 @@ const organization = {
 <title>{title}</title>
 <meta name="description" content={description} />
 {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonicalURL.href} />}
+{!noindex && !SEARCH_INDEXING && <meta name="robots" content="noindex, nofollow" />}
 <meta name="color-scheme" content="light dark" />
 
 <link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32" />

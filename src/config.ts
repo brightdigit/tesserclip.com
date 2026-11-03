@@ -29,6 +29,10 @@ export const REPO_URL = 'https://github.com/brightdigit/TesserClip';
 export const SUPPORT_EMAIL = 'support@tesserclip.com';
 export const PRESS_EMAIL = SUPPORT_EMAIL; // D20
 
+// Search engines: false puts `noindex, nofollow` on every page until launch (spec §12).
+// Flip to true to go public, then submit the sitemap in Search Console.
+export const SEARCH_INDEXING = false;
+
 export const ANALYTICS: Analytics = { provider: 'none' };
 
 export const COMPANY_NAME = 'BrightDigit';
