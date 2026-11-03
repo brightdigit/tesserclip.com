@@ -147,3 +147,10 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+
+# Astro / site
+dist/
+.astro/
+.lighthouseci/
+public/downloads/
+.DS_Store
