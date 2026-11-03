@@ -63,15 +63,20 @@ function normalize(href) {
   return path.replace(/\/+$/, '');
 }
 
-/** Paths that are allowed to be missing for now. */
+/** Paths that are allowed to be missing for now. An entry with a fragment
+ *  (`/help/#shortcuts`) only excuses that missing id, never the page. A `#`
+ *  starts a comment only at the start of a line or after whitespace. */
 function readAllowlist() {
   if (!existsSync(ALLOW_FILE)) return new Set();
   return new Set(
     readFileSync(ALLOW_FILE, 'utf8')
       .split('\n')
-      .map((line) => line.replace(/#.*$/, '').trim())
+      .map((line) => line.replace(/(^|\s)#.*$/, '').trim())
       .filter(Boolean)
-      .map(normalize),
+      .map((entry) => {
+        const hashAt = entry.indexOf('#');
+        return hashAt === -1 ? normalize(entry) : `${normalize(entry)}${entry.slice(hashAt)}`;
+      }),
   );
 }
 
@@ -147,7 +152,9 @@ for (const file of htmlFiles(DIST)) {
     const hashAt = raw.indexOf('#');
     if (hashAt !== -1 && target.endsWith('.html')) {
       const fragment = decodeURIComponent(raw.slice(hashAt + 1));
-      if (fragment && !idsIn(target).has(fragment)) report(`${path}#${fragment} (no such id)`, source);
+      if (fragment && !idsIn(target).has(fragment) && !allow.has(`${path}#${fragment}`)) {
+        report(`${path}#${fragment} (no such id)`, source);
+      }
     }
   }
 }
