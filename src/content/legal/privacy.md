@@ -1,7 +1,7 @@
 ---
 title: Privacy Policy
 description: TesserClip keeps your text on your Mac. No account, no analytics and no tracking in the app, and no cookies on this website.
-lastUpdated: 2026-10-31
+lastUpdated: 2026-11-03
 dateLabel: Last updated
 # Facts behind these claims (spec §9.4), checked in brightdigit/TesserClip on
 # 2026-10-31: drafts persist in the app container and closing a window removes
@@ -34,7 +34,9 @@ TesserClip is distributed through the Mac App Store and, during the beta, TestFl
 
 ## This website
 
-tesserclip.com is a static website hosted on GitHub Pages. It doesn’t use cookies, run analytics or ask for personal information.
+tesserclip.com is a static website hosted on GitHub Pages. It doesn’t use cookies or ask for personal information.
+
+It counts visits with [Plausible](https://plausible.io/), a privacy‑friendly analytics service that doesn’t use cookies or persistent identifiers. Plausible records the page you visited, the site that linked to it, your browser, operating system, device type and country, and clicks on links to other sites, such as TestFlight. It doesn’t store your IP address, and none of it is used for advertising or to follow you across other sites.
 
 ## Changes
 

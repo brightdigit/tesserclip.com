@@ -18,7 +18,7 @@ This is the marketing and help website for **TesserClip**, BrightDigit’s macOS
 - TypeScript in strict mode
 - **Node 24** pinned in `.mise.toml`
 - Lighthouse CI (`lighthouserc.json`) and an internal link checker (`scripts/check-links.js`)
-- No backend, no CMS, no analytics, no web fonts and no third-party requests
+- No backend, no CMS and no web fonts. The only third-party request is cookieless Plausible analytics.
 
 The setup is copied from `brightdigit/atleast.app`. The page set, App Store badges and terms follow `brightdigit/month.bar`.
 
@@ -74,7 +74,7 @@ These two in-repo files are the source of truth for how to work here. Both are c
   2. Take Playwright screenshots of your pages (1440 and 390 wide, light and dark) and compare them with the design PNGs.
   3. Put the screenshots and any differences in the PR description.
 - **Keep parallel branches merge-clean.** Put new UI in new files. Shared files (`config.ts`, `Nav`, `Footer`, `BaseLayout`, `global.css`) get additive edits only.
-- **Don’t add** `claude.yml` or `claude-code-review.yml` workflows, and don’t add analytics.
+- **Don’t add** `claude.yml` or `claude-code-review.yml` workflows, or any analytics beyond the Plausible script.
 - Push with `git push -u origin HEAD`. Never commit secrets. The repo will become public.
 
 ## Copy rules
@@ -83,7 +83,7 @@ These two in-repo files are the source of truth for how to work here. Both are c
 - Use typographic punctuation: curly quotes and apostrophes (’ “ ”), `…` (not three dots) and `▸` for menu paths (**Edit ▸ Substitutions**).
 - Write shortcuts as Mac key glyphs in `<kbd>` chips (⌘ ⇧ ⌥ ⌃), e.g. ⇧⌘C.
 - **Never overclaim.** Describe only what the app SPEC says v1 does. Never imply clipboard history, auto-paste, a global hotkey, a menu bar mode, Markdown, saving files or font settings.
-- Privacy copy must match reality: the app sends nothing and has no analytics, and the site has no cookies and no analytics.
+- Privacy copy must match reality: the app sends nothing and has no analytics, and the site has no cookies and uses only cookieless Plausible analytics.
 - Use “BrightDigit” for display and “BrightDigit, LLC” only in the Terms.
 - The footer line is `© 2026 BrightDigit. All rights reserved.`
 - The only email is `support@tesserclip.com`, which also covers press.
