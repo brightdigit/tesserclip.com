@@ -24,7 +24,7 @@ The setup is copied from `brightdigit/atleast.app`. The page set, App Store badg
 
 ## Commands
 
-Always go through `make` (or `mise exec -- npm …`). Don’t call `npm` directly, because it may not be on PATH.
+Always go through `make` (or `mise exec -- npm …`). Don’t call `npm` directly, because it may not be on PATH. The `Makefile` uses `mise exec -- npm` when mise is installed and falls back to plain `npm` otherwise.
 
 | Command | What it does |
 |---|---|
@@ -33,6 +33,7 @@ Always go through `make` (or `mise exec -- npm …`). Don’t call `npm` directl
 | `make build` | Production build to `dist/`. The prebuild step generates the press kit zip. Config guards only warn here. |
 | `make build-production` | The same build with `SITE_DEPLOY=1`, so config guards are fatal (TestFlight placeholder, App Store ID) |
 | `make preview` | Serves `dist/` locally |
+| `make test` | Runs the `node --test` unit tests in `src/lib/` (config guard, key labels). `make build` runs them first. |
 | `make check-links` | Checks internal links, fragments and required paths in `dist/`. Run it after `make build`. |
 | `make lighthouse` | Runs Lighthouse CI against `dist/` |
 | `make clean` | Removes `dist/`, `.astro/` and generated downloads |

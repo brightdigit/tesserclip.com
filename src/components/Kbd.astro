@@ -1,0 +1,19 @@
+---
+// A keyboard shortcut chip: <Kbd keys="⇧⌘C" />. Shows Mac glyphs and gives
+// screen readers a spelled-out label (“Shift Command C”).
+import { spellKeys } from '../lib/keys';
+
+interface Props {
+  keys: string;
+  class?: string;
+}
+
+const { keys, class: className } = Astro.props;
+---
+
+<kbd
+  class:list={[
+    'inline-block min-w-[1.9em] rounded-md border border-b-2 border-brand-border bg-brand-elevated px-[0.45em] py-[0.08em] text-center font-sans text-[0.82em] leading-[1.45] font-medium tracking-[0.04em] whitespace-nowrap text-brand-text',
+    className,
+  ]}><span aria-hidden="true">{keys}</span><span class="sr-only">{spellKeys(keys)}</span></kbd
+>

@@ -1,0 +1,37 @@
+---
+// Centred footer (spec §7): icon, PrimaryCta (outlined), “developed by”
+// BrightDigit logo, link row and the copyright line.
+import { APP_NAME, COMPANY_URL, COPYRIGHT } from '../config';
+import AppIcon from './AppIcon.astro';
+import BrightDigitLogo from './BrightDigitLogo.astro';
+import PrimaryCta from './PrimaryCta.astro';
+import { FOOTER_LINKS } from '../data/navigation';
+---
+
+<footer class="border-t border-brand-hairline pt-16 pb-14 text-center">
+  <div class="mx-auto flex max-w-5xl flex-col items-center px-5 md:px-6">
+    <AppIcon size={48} alt={`${APP_NAME} app icon`} class="mb-6 h-12 w-12" />
+    <PrimaryCta placement="footer" class="mb-8" />
+    <a
+      href={COMPANY_URL}
+      class="group mb-8 inline-flex items-center gap-2 rounded-md text-sm text-brand-muted italic transition-colors hover:text-brand-text"
+    >
+      {APP_NAME} is developed by
+      <BrightDigitLogo class="inline-block h-7 w-auto align-middle text-brand-text" />
+    </a>
+    <nav aria-label="Footer" class="mb-6">
+      <ul class="flex flex-wrap justify-center gap-x-6 gap-y-3">
+        {
+          FOOTER_LINKS.map((link) => (
+            <li>
+              <a href={link.href} class="rounded-sm text-sm text-brand-muted transition-colors hover:text-brand-text">
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+    <p class="text-sm text-brand-muted">{COPYRIGHT}</p>
+  </div>
+</footer>

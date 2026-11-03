@@ -1,0 +1,108 @@
+@import "tailwindcss";
+
+/* Design tokens (spec §5, .agents/designs/README.md). Light values live in
+   @theme so Tailwind generates the brand-* utilities; dark values redefine the
+   same custom properties below. Components use the utilities or var(--…),
+   never raw hex. Add new tokens here in both blocks. */
+@theme {
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+
+  --color-brand-accent: #4A1D7A;
+  --color-brand-accent-strong: #4A1D7A;
+  --color-brand-deep: #06030D;
+  --color-brand-bg: #FFFFFF;
+  --color-brand-surface: #F5F5F7;
+  --color-brand-elevated: #FFFFFF;
+  --color-brand-border: #D2D2D7;
+  --color-brand-hairline: rgb(0 0 0 / 0.08);
+  --color-brand-text: #1D1D1F;
+  --color-brand-muted: #6E6E73;
+  --color-brand-tint: #F4EEFA;
+  --color-brand-tint-2: #E8DDF5;
+}
+
+:root {
+  color-scheme: light dark;
+  /* Gradient stage behind screenshots: bg-[linear-gradient(165deg,var(--stage-from),var(--stage-to))] */
+  --stage-from: #F6F1FB;
+  --stage-to: #DCCBF0;
+  /* Shadows are tokens too, so they can follow the colour scheme. */
+  --shadow-window: 0 40px 90px -20px rgb(46 14 84 / 0.45), 0 0 0 0.5px rgb(0 0 0 / 0.18);
+  --shadow-accent: 0 8px 24px -10px rgb(74 29 122 / 0.7);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-brand-accent: #9B6BD8;
+    --color-brand-accent-strong: #7C4DBF;
+    --color-brand-deep: #06030D;
+    --color-brand-bg: #0B0A0F;
+    --color-brand-surface: #16141C;
+    --color-brand-elevated: #1D1A24;
+    --color-brand-border: #2E2A37;
+    --color-brand-hairline: rgb(255 255 255 / 0.09);
+    --color-brand-text: #F5F5F7;
+    --color-brand-muted: #A1A1A6;
+    --color-brand-tint: #1C1526;
+    --color-brand-tint-2: #2A1D3B;
+    --stage-from: #4A1D7A;
+    --stage-to: #06030D;
+    --shadow-window: 0 40px 90px -20px rgb(0 0 0 / 0.8), 0 0 0 0.5px rgb(255 255 255 / 0.14);
+  }
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-brand-bg);
+    color: var(--color-brand-text);
+    font-family: var(--font-sans);
+    font-size: 17px;
+    line-height: 1.6;
+    letter-spacing: -0.003em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  @media (min-width: 48rem) {
+    body {
+      font-size: 18px;
+    }
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    line-height: 1.12;
+    letter-spacing: -0.022em;
+    font-weight: 600;
+  }
+
+  /* Visible focus everywhere (spec §13): a 2 px accent outline with offset. */
+  :focus-visible {
+    outline: 2px solid var(--color-brand-accent);
+    outline-offset: 2px;
+  }
+
+  /* Anchored sections clear the 64 px sticky nav. */
+  [id] {
+    scroll-margin-top: 6rem;
+  }
+}
+
+/* Reduced motion (spec §13): no transitions or animations anywhere. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,26 @@
+---
+// The placeholder app icon (it follows the colour scheme). Decorative by
+// default (alt=""), because the app name usually sits next to it.
+import icon from '../assets/icon/app-icon.svg';
+
+interface Props {
+  size: number;
+  alt?: string;
+  class?: string;
+  loading?: 'eager' | 'lazy';
+  fetchpriority?: 'high' | 'low' | 'auto';
+}
+
+const { size, alt = '', class: className, loading = 'lazy', fetchpriority } = Astro.props;
+---
+
+<img
+  src={icon.src}
+  alt={alt}
+  width={size}
+  height={size}
+  loading={loading}
+  decoding="async"
+  fetchpriority={fetchpriority}
+  class:list={['shrink-0', className]}
+/>

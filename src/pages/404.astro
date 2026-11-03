@@ -1,0 +1,15 @@
+---
+// Stub from the scaffold (#1). #5 replaces the body. GitHub Pages serves
+// dist/404.html at any depth, so every link and asset URL stays root-absolute.
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const title = 'Page not found – TesserClip';
+const description = 'We couldn’t find the page you’re looking for. It may have moved, or the link may be wrong.';
+---
+
+<BaseLayout title={title} description={description} noindex>
+  <section class="mx-auto max-w-2xl px-5 py-16 text-center md:px-6 md:py-24">
+    <h1 class="text-[34px] font-bold md:text-5xl">This page doesn’t contain text</h1>
+    <p class="mt-4 text-lg text-brand-muted md:text-[21px] md:leading-normal">{description}</p>
+  </section>
+</BaseLayout>

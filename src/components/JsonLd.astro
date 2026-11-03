@@ -1,0 +1,12 @@
+---
+// One JSON-LD block. Data blocks aren't executed, so the CSP's script-src 'self'
+// doesn't apply. Pass it through BaseLayout's "head" slot:
+//   <JsonLd slot="head" schema={{ '@context': 'https://schema.org', … }} />
+interface Props {
+  schema: Record<string, unknown>;
+}
+
+const { schema } = Astro.props;
+---
+
+<script type="application/ld+json" set:html={JSON.stringify(schema)} />

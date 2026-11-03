@@ -1,0 +1,3 @@
+# Internal paths that don't exist yet but are deliberately linked.
+# Remove each entry as its page lands. The checker fails on anything not listed,
+# and never accepts an entry for a required path.

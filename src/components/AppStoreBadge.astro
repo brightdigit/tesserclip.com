@@ -1,0 +1,37 @@
+---
+// Apple's official Mac App Store badge, unmodified (spec §7): black artwork in
+// light mode, white in dark mode. Only render it in the released state with an
+// APP_STORE_ID; never show a greyed-out or “coming soon” badge.
+import { APP_STORE_URL } from '../config';
+import NewTabNote from './NewTabNote.astro';
+
+interface Props {
+  /** Badge height in px. Apple's onscreen minimum is 40. Hero 56, footer 48, nav 40. */
+  height?: 40 | 48 | 56;
+  class?: string;
+}
+
+const { height = 48, class: className } = Astro.props;
+// The artwork is 156.10054 × 40.
+const width = Math.round((156.10054 / 40) * height);
+---
+
+<a
+  href={APP_STORE_URL}
+  target="_blank"
+  rel="noopener noreferrer"
+  class:list={['inline-block shrink-0 rounded-lg transition-opacity hover:opacity-80', className]}
+>
+  <picture>
+    <source srcset="/badges/download-on-the-mac-app-store-white.svg" media="(prefers-color-scheme: dark)" />
+    <img
+      src="/badges/download-on-the-mac-app-store-black.svg"
+      alt="Download on the Mac App Store"
+      width={width}
+      height={height}
+      class="block w-auto"
+      style={`height:${height}px`}
+    />
+  </picture>
+  <NewTabNote />
+</a>

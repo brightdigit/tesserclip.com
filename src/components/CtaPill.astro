@@ -1,0 +1,36 @@
+---
+// The nav pill (spec §8): “Join Beta” in beta, “Download” when released,
+// hidden while coming soon.
+import { APP_STORE_URL, RELEASE_STATE, TESTFLIGHT_URL } from '../config';
+import NewTabNote from './NewTabNote.astro';
+
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+
+const cta =
+  RELEASE_STATE === 'beta'
+    ? { href: TESTFLIGHT_URL, label: 'Join Beta' }
+    : RELEASE_STATE === 'released' && APP_STORE_URL
+      ? { href: APP_STORE_URL, label: 'Download' }
+      : null;
+---
+
+{
+  cta && (
+    <a
+      href={cta.href}
+      target="_blank"
+      rel="noopener noreferrer"
+      class:list={[
+        'rounded-full border border-brand-border bg-brand-surface px-3.5 py-1.5 text-sm font-medium whitespace-nowrap text-brand-text transition-colors hover:border-brand-accent md:px-4',
+        className,
+      ]}
+    >
+      {cta.label}
+      <NewTabNote />
+    </a>
+  )
+}
