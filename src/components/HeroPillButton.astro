@@ -1,0 +1,31 @@
+---
+// The white pill button on the dark hero stage (spec §7): the home hero’s
+// TestFlight button and the press key-art card’s zip download. At least 50 px
+// tall, black text on white, a soft purple glow.
+import NewTabNote from './NewTabNote.astro';
+
+interface Props {
+  href: string;
+  /** Opens in a new tab with rel="noopener noreferrer" and says so to assistive tech. */
+  newTab?: boolean;
+  download?: boolean;
+  class?: string;
+}
+
+const { href, newTab = false, download = false, class: className } = Astro.props;
+---
+
+<a
+  href={href}
+  target={newTab ? '_blank' : undefined}
+  rel={newTab ? 'noopener noreferrer' : undefined}
+  download={download || undefined}
+  class:list={[
+    'inline-flex min-h-[50px] items-center gap-2.5 rounded-full bg-white py-2.5 pr-6 pl-4 text-[17px] leading-[1.2] font-semibold text-black shadow-[0_0_0_1px_rgb(255_255_255/0.4),0_10px_36px_rgb(155_107_216/0.4)] transition hover:brightness-[.96] focus-visible:outline-white focus-visible:outline-offset-[3px]',
+    className,
+  ]}
+>
+  <slot name="icon" />
+  <span><slot /></span>
+  {newTab && <NewTabNote />}
+</a>

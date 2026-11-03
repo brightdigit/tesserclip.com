@@ -1,6 +1,7 @@
 ---
 // /privacy (spec §9.4). Copy lives in src/content/legal/privacy.md.
 import { getEntry } from 'astro:content';
+import PrivacyCard from '../components/PrivacyCard.astro';
 import PrivacySummary from '../components/PrivacySummary.astro';
 import { SUPPORT_EMAIL } from '../config';
 import ProseLayout from '../layouts/ProseLayout.astro';
@@ -19,6 +20,6 @@ const html = fillTokens(entry.rendered.html, { SUPPORT_EMAIL });
   dateLabel={dateLabel}
   date={lastUpdated}
 >
-  <PrivacySummary slot="intro" />
+  <PrivacyCard slot="intro" compact><PrivacySummary /></PrivacyCard>
   <Fragment set:html={html} />
 </ProseLayout>

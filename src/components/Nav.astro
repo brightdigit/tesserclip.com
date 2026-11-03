@@ -1,5 +1,6 @@
 ---
-// Sticky translucent nav (spec §7). The links collapse into a <details> menu
+// Sticky translucent nav (spec §7). Solid, with no blur, under reduced
+// transparency or increased contrast (§13). The links collapse into a <details> menu
 // below lg; it needs no JS (the CSP is script-src 'self').
 import { APP_NAME } from '../config';
 import AppIcon from './AppIcon.astro';
@@ -16,7 +17,7 @@ const current = (href: string) => (here === href ? 'page' : here.startsWith(href
 ---
 
 <header
-  class="sticky top-0 z-50 h-16 border-b border-brand-hairline bg-brand-bg/80 backdrop-blur-xl backdrop-saturate-180"
+  class="sticky top-0 z-50 h-16 border-b border-brand-hairline bg-brand-bg/80 backdrop-blur-xl backdrop-saturate-180 contrast-more:bg-brand-bg contrast-more:backdrop-filter-none reduce-transparency:bg-brand-bg reduce-transparency:backdrop-filter-none"
 >
   <nav aria-label="Main" class="mx-auto flex h-full max-w-5xl items-center justify-between px-5 md:px-6">
     <a

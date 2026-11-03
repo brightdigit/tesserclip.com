@@ -30,7 +30,48 @@
   /* Shadows are tokens too, so they can follow the colour scheme. */
   --shadow-window: 0 40px 90px -20px rgb(46 14 84 / 0.45), 0 0 0 0.5px rgb(0 0 0 / 0.18);
   --shadow-accent: 0 8px 24px -10px rgb(74 29 122 / 0.7);
+
+  /* Tesseract restyle (spec §5, issue #17). The --hero-* values define the
+     dark hero stage, so they're the same in both schemes on purpose. */
+  --hero-bg: #000;
+  --hero-ink: #F5F5F7;
+  --hero-ink-2: #C9C4D3;
+  --hero-ink-3: #A29CAE;
+  --hero-accent: #C9A8FF;
+  --hero-line: rgb(255 255 255 / 0.16);
+  --hero-cta-glyph: #4A1D7A; /* TesserClip purple on the white hero pill */
+  --hero-glow-1: rgb(130 70 220 / 0.42);
+  --hero-glow-2: rgb(74 29 122 / 0.55);
+  /* Window room, projected frames and line tesseracts (decorative). */
+  --wire: rgb(74 29 122 / 0.38);
+  --wire-dot: #4A1D7A;
+  --wall-from: rgb(74 29 122 / 0.10);
+  --wall-to: rgb(74 29 122 / 0.015);
+  --room-label: #4D4A55;
+  --privacy-card: var(--color-brand-surface);
+  --privacy-art: var(--color-brand-accent);
+  --glass: rgb(255 255 255 / 0.72);
+  --glass-border: rgb(0 0 0 / 0.10);
+  /* brand-muted on brand-tint (the help index band): #6E6E73 is only 4.45:1
+     on #F4EEFA, so the band uses a slightly darker grey (5.3:1). */
+  --tint-muted: #636366;
 }
+
+/* Tailwind colour utilities for the restyle tokens (text-hero-ink, …). */
+@theme inline {
+  --color-hero-bg: var(--hero-bg);
+  --color-hero-ink: var(--hero-ink);
+  --color-hero-ink-2: var(--hero-ink-2);
+  --color-hero-ink-3: var(--hero-ink-3);
+  --color-hero-accent: var(--hero-accent);
+  --color-hero-line: var(--hero-line);
+  --color-room-label: var(--room-label);
+  --color-privacy-card: var(--privacy-card);
+  --color-privacy-art: var(--privacy-art);
+}
+
+/* Accessibility variants (spec §13): contrast-more: is built in. */
+@custom-variant reduce-transparency (@media (prefers-reduced-transparency: reduce));
 
 @media (prefers-color-scheme: dark) {
   :root {
@@ -49,6 +90,16 @@
     --stage-from: #4A1D7A;
     --stage-to: #06030D;
     --shadow-window: 0 40px 90px -20px rgb(0 0 0 / 0.8), 0 0 0 0.5px rgb(255 255 255 / 0.14);
+    --wire: rgb(214 190 255 / 0.50);
+    --wire-dot: #fff;
+    --wall-from: rgb(155 107 216 / 0.22);
+    --wall-to: rgb(155 107 216 / 0.03);
+    --room-label: #C9C4D3;
+    --privacy-card: #000;
+    --privacy-art: #C9A8FF;
+    --glass: rgb(29 26 36 / 0.66);
+    --glass-border: rgb(255 255 255 / 0.14);
+    --tint-muted: #A1A1A6;
   }
 }
 
@@ -120,6 +171,13 @@
   }
   :where(.text-links) :where(a:not([class])):hover {
     text-decoration-color: currentColor;
+  }
+}
+
+/* Increased contrast (spec §13): bordered cards use brand-text. */
+@media (prefers-contrast: more) {
+  :where(.rounded-2xl.border, .rounded-xl.border, .rounded-3xl.border) {
+    border-color: var(--color-brand-text);
   }
 }
 

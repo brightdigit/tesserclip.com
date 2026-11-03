@@ -15,25 +15,52 @@
   "icons": [
     {
       "name": "Default",
-      "svg": "app-icon.svg",
-      "png": "app-icon-1024.png",
+      "file": "AppIcon-macOS-Default-1024.png",
       "alt": "TesserClip icon, default appearance"
     },
     {
       "name": "Dark",
-      "svg": "app-icon-dark.svg",
-      "png": "app-icon-dark-1024.png",
+      "file": "AppIcon-macOS-Dark-1024.png",
       "alt": "TesserClip icon, dark appearance"
+    },
+    {
+      "name": "Clear light",
+      "file": "AppIcon-macOS-ClearLight-1024.png",
+      "alt": "TesserClip icon, clear light appearance"
+    },
+    {
+      "name": "Clear dark",
+      "file": "AppIcon-macOS-ClearDark-1024.png",
+      "alt": "TesserClip icon, clear dark appearance"
+    },
+    {
+      "name": "Tinted light",
+      "file": "AppIcon-macOS-TintedLight-1024.png",
+      "alt": "TesserClip icon, tinted light appearance"
+    },
+    {
+      "name": "Tinted dark",
+      "file": "AppIcon-macOS-TintedDark-1024.png",
+      "alt": "TesserClip icon, tinted dark appearance"
     }
   ],
-  "iconLabel": "1024 · PNG · WebP",
-  "iconNote": "Final artwork will be exported from Icon Composer, including the Clear and Tinted appearances.",
+  "iconLabel": "1024 · PNG",
   "iconGuidelines": [
     "Use the provided app icon files without modification.",
     "Keep the original aspect ratio.",
     "Don’t change the icon’s colours, add effects or distort it.",
     "Leave enough clear space around the icon."
   ],
+  "keyArt": {
+    "file": "tesseract-key-art-2400x1260.png",
+    "title": "Tesseract",
+    "label": "2400 × 1260 · PNG",
+    "alt": "A glowing glass tesseract, a cube inside a cube, with the TesserClip icon’s glass sheets in its inner cell, on black."
+  },
+  "name": {
+    "title": "The name",
+    "text": "TesserClip is tesser + clip. A tesseract is a four‑dimensional cube, drawn as a cube inside a cube. The key art builds one from the glass sheets of the app icon, with the clipboard in the middle."
+  },
   "screenshots": [
     {
       "file": "01-editor.png",

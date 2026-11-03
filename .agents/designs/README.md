@@ -1,139 +1,166 @@
-# tesserclip.com design mockups
+# tesserclip.com design mockups: Tesseract
 
-Static mockups for the TesserClip marketing and help site. Each screen is one standalone HTML file with inline CSS and no external requests, plus a PNG rendered with Playwright (Chromium). Local images live in `assets/`. The production build will be **Astro + Tailwind on GitHub Pages**, like month.bar and atleast.app, so the tokens and spacing below map straight onto Tailwind.
+The current designs for the TesserClip site. They’re the round-2 **A1 Tesseract** direction with every change in the independent review applied (`design-explorations` branch, `.agents/designs/explorations/round-2/REVIEW.md`). Leo approved it on 2026-11-02 (issue #17). The v1 mockups they replace are archived in [`v1-original/`](v1-original/README.md).
+
+**In one line:** a static dark hero card with the tesseract on the right, then the product straight away, and everything below the hero is the calm, flat, system-scheme site the spec already describes.
+
+## How these files were made
+
+- Each page is one standalone HTML file with no external requests. It was generated from the **7-qa build** (`dist/`), so the visible text is the current built copy in the **beta** state. The file inlines the built Tailwind CSS, then a `#tesseract-restyle` style block with the new tokens and components (`tc-…` classes), then a RENDER-ONLY font block.
+- **RENDER-ONLY font block.** The Linux renderer has no SF Pro, so `<style id="render-only-font">` puts Inter into the stack for the PNGs. It’s marked in every file. It isn’t part of the design: the site ships the system stack only, with no web fonts.
+- PNGs are Playwright (Chromium) renders with `reducedMotion: 'reduce'`: 1440 wide at 1×, and 390 wide at 2×, full page. The home page also has above-the-fold renders at 1440×900 and 1280×800.
+- The `tc-…` class names and the markup are a reference, not an API. Build the components named in `WEBSITE.md` §7 with Tailwind.
 
 ## Screens
 
-| File | URL path | Notes |
+Every row has a `-light.png` and a `-dark.png`.
+
+| File | URL path | Renders |
 |---|---|---|
-| `01-home.html` / `01-home.png` | `/` | Desktop, 1440 wide, full page, light, **beta state** |
-| `02-home-dark.png` | `/` | Same page with `colorScheme: 'dark'` |
-| `03-home-mobile.png` | `/` | 390 wide (rendered @2x), light |
-| `01b-home-launch.html` / `.png` | `/` | Extra: the same page in its **launch state** (Mac App Store badge in place of TestFlight) |
-| `04-help.html` / `.png` | `/help` | Help index. Opened by Help ▸ TesserClip Help (⌘?) in the app |
-| `05-help-clipboard-permission.html` / `.png` | `/help/clipboard-permission` | Opened by the permission window’s ? button |
-| `06-privacy.html` / `.png` | `/privacy` | App Store Connect Privacy Policy URL |
-| `07-support.html` / `.png` | `/support` | App Store Connect Support URL |
-| `08-terms.html` / `.png` | `/terms` | Terms of Use (added to match the reference sites) |
-| `09-press.html` / `.png` | `/press` | Press kit (added to match the reference sites) |
-| `10-404.html` / `.png` | `/404` | Not found |
+| `01-home.html` | `/` | `01-home-1440-*` (full page), `01-home-1440x900-*` and `01-home-1280x800-*` (first screen), `01-home-390-*` |
+| `04-help.html` | `/help/` | `04-help-1440-*`, `04-help-390-*` |
+| `05-help-clipboard-permission.html` | `/help/clipboard-permission/` | `05-help-clipboard-permission-1440-*`, `-390-*` |
+| `06-privacy.html` | `/privacy/` | `06-privacy-1440-*`, `-390-*` |
+| `07-support.html` | `/support/` | `07-support-1440-*`, `-390-*` |
+| `08-terms.html` | `/terms/` | `08-terms-1440-*`, `-390-*` |
+| `09-press.html` | `/press/` | `09-press-1440-*`, `-390-*` |
+| `10-404.html` | `/404.html` | `10-404-1440-*`, `-390-*` |
 
-### Assets
+There’s no new released-state mockup. The released state swaps the CTAs exactly as `WEBSITE.md` §8 says. Note that on the dark hero card the Mac App Store badge is always the **white** variant, whatever the scheme.
 
-- `assets/app-icon.svg`: a **placeholder** made by flattening `TesserClip/Resources/AppIcon.icon` (its `icon.json` plus the six SVG layers) into a macOS rounded-rect tile. Each layer uses its intrinsic SVG size and the icon.json translation, opacity and group order, with drop shadows standing in for Liquid Glass. The file carries both appearances through `prefers-color-scheme`: light uses an automatic gradient around #4A1D7A, and dark runs #4A1D7A → #06030D. Replace it with a real Icon Composer export.
-- `assets/app-icon-dark.svg`: the same placeholder fixed to the dark appearance, for the press kit.
-- `assets/badges/download-on-the-mac-app-store-{black,white}.svg`: **Apple’s official badge artwork**, copied from month.bar. Black is used in light mode and white in dark mode, as on month.bar.
-- `assets/screens/*.png`: copies of the app mockups from `TesserClip/.claude/designs/`. The `*-window.png` files are transparent cutouts of just the window, re-rendered from the mockups’ HTML at 2×, so they can sit on the purple stage.
+### Measured (Chromium, Inter stand-in)
 
-## Beta-state treatment
+| Check | Target (REVIEW.md) | Measured |
+|---|---|---|
+| Hero CTA bottom at 1280×800 | ≤ ~700 px | **535 px** (the same at 1440×900 and 1366×768) |
+| Window room top / screenshot top at 1440×900 | Screenshot top visible | Room **694 px**, screenshot **803 px** |
+| Window room top at 1280×800 | Peeks above the fold | **694 px** (the screenshot starts at 803, just below) |
+| Hero CTA bottom at 390×844 | Visible | **493 px** |
+| Safe-edits screenshot width | ≥ 50 % of the row | **51 %** at 1440 (77 % at 390) |
+| `scrollWidth` at 320 px, every page, both schemes | 320 | **320**, no overflow |
 
-The site has **two CTA modes**, which copy atleast.app’s `PRIMARY_CTA` switch (`'testflight' | 'appstore'`) in `src/config.ts`.
+SF Pro sets slightly tighter than Inter, so on a Mac these numbers can only go down.
 
-- **Beta (now):** an eyebrow pill reads “Now in beta on TestFlight”. The hero CTA is a filled purple **“Join the beta on TestFlight”** button using the TestFlight glyph, which is atleast’s AppStoreBadge beta variant in TesserClip purple. A line under it says “Coming soon to the Mac App Store. Requires macOS 27 or later.” The nav CTA is a “Join Beta” pill, and the footer repeats the TestFlight button. No App Store badge appears, because a greyed-out official badge would misuse Apple’s artwork.
-- **Launch:** shown in `01b-home-launch.png`. The pill reads “New on the Mac App Store”, Apple’s badge replaces the TestFlight button in the hero, nav and footer, and the line becomes “Requires macOS 27 or later.” The month.bar-style `LaunchBanner` is available for launch week if wanted.
+## Assets
 
-## Design decisions
+| Path | What |
+|---|---|
+| `assets/icons/AppIcon-macOS-{Default,Dark,ClearLight,ClearDark,TintedLight,TintedDark}-1024@1x.png` | The real Icon Composer exports. They replace the placeholder `app-icon.svg` / `app-icon-dark.svg` (kept only for `v1-original/`) |
+| `assets/icons/icon-{default,dark}-{128,256}.png` | Downsizes for the mockups’ nav, footer and hero |
+| `assets/tesseract/tesseract-hero-{600,1200}.{png,webp}` | **The hero art.** The resting frame of A1’s tesseract (outer glass cube, inner cell with the icon’s three sheets, eight struts, floor glow), exported once as a static, transparent image. Shown at 460 px (≥ `lg`) or 240 px (below) |
+| `assets/tesseract/og-image-1200x630.png` | The OG/Twitter image: the hero art on black with the icon, name, tagline and URL |
+| `assets/tesseract/tesseract-key-art-2400x1260.png` | Press key art: the hero art alone on the black stage |
+| `assets/tesseract/tesseract-line.svg` | The 2D line tesseract (oblique projection, inner cell filled). Privacy card. `currentColor` |
+| `assets/tesseract/tesseract-line-empty.svg` | The same with an empty, dashed inner cell. 404 |
+| `assets/tesseract/tesseract-mark.svg` | The 32 px mark: non-scaling 1.5 px strokes. Help and support headers |
+| `assets/tesseract/source/*.html` | Sources for the renders. Re-export the OG image on a Mac (delete its RENDER-ONLY block) so its wordmark is SF Pro |
+| `assets/screens/*.png` | Unchanged app mockup screenshots (open question 1 in the spec) |
+| `assets/badges/*.svg` | Unchanged Apple badge artwork |
 
-### Palette (CSS custom properties; Tailwind v4 `@theme` names)
+## Palette and tokens
 
-| Token | Light | Dark | Source / use |
+**The §5 tokens are unchanged** and still drive every section below the hero, in both schemes: `brand-accent`, `brand-accent-strong`, `brand-bg`, `brand-surface`, `brand-elevated`, `brand-border`, `brand-hairline`, `brand-text`, `brand-muted`, `brand-tint`, `brand-tint-2`, `--stage-from/to`. A1’s band and card colours were already the dark tokens (`#0B0A0F` / `#16141C`), so they map straight on.
+
+The restyle adds these:
+
+| Token | Light | Dark | Use |
 |---|---|---|---|
-| `--color-brand-accent` | **#4A1D7A** | **#9B6BD8** | icon.json base `extended-srgb .2902,.1137,.4784`; dark is AccentColor.colorset’s lightened purple. Links, icons, step numbers |
-| `--color-brand-accent-strong` | #4A1D7A | #7C4DBF | Filled buttons. The dark value keeps white text above 4.5:1 |
-| `--color-brand-deep` | #06030D | | icon.json dark gradient stop. Dark-mode stage gradient |
-| `--color-brand-bg` | #FFFFFF | #0B0A0F | Page. Dark is near-black with a hint of the icon’s purple |
-| `--color-brand-surface` | #F5F5F7 | #16141C | Alternating sections, cards |
-| `--color-brand-elevated` | #FFFFFF | #1D1A24 | Icon tiles, step cards, kbd |
-| `--color-brand-border` | #D2D2D7 | #2E2A37 | Card borders |
-| `--color-brand-hairline` | rgba(0,0,0,.08) | rgba(255,255,255,.09) | Nav and footer rules, table rows |
-| `--color-brand-text` | #1D1D1F | #F5F5F7 | Apple grays, as on month.bar |
-| `--color-brand-muted` | #6E6E73 | #A1A1A6 | Secondary text |
-| `--color-brand-tint` / `-tint-2` | #F4EEFA / #E8DDF5 | #1C1526 / #2A1D3B | Eyebrow pill, privacy summary |
-| `--stage` | #F6F1FB → #DCCBF0 | #4A1D7A → #06030D | The gradient “stage” behind screenshots, echoing the icon |
+| `--hero-bg` | `#000` | `#000` | Hero and press key-art card. **The same in both schemes** |
+| `--hero-ink` | `#F5F5F7` | same | Hero h1 (19.3:1 on black) |
+| `--hero-ink-2` | `#C9C4D3` | same | Hero lead (12.3:1 on black, ≥ 6.3:1 on the brightest glow) |
+| `--hero-ink-3` | `#A29CAE` | same | Line under the CTA (7.9:1 on black) |
+| `--hero-accent` | `#C9A8FF` | same | Tagline, pill dot (10.5:1 on black, 5.4:1 on the brightest glow) |
+| `--hero-line` | `rgb(255 255 255 / .16)` | same | Pill border |
+| `--hero-glow-1` / `-2` | `rgb(130 70 220 / .42)` / `rgb(74 29 122 / .55)` | same | The two radial glows behind the art |
+| `--wire` | `rgb(74 29 122 / .38)` | `rgb(214 190 255 / .50)` | Room and frame lines (decorative) |
+| `--wall-from` / `--wall-to` | `rgb(74 29 122 / .10)` → `/ .015` | `rgb(155 107 216 / .22)` → `/ .03` | Room and frame wall fills |
+| `--room-label` | `#4D4A55` | `#C9C4D3` | Wall labels (8.7:1 on white, 7.3:1 on the light wall tint, 11.6:1 on the dark page) |
+| `--privacy-card` | `brand-surface` | `#000` | Privacy card background |
+| `--privacy-art` | `brand-accent` | `#C9A8FF` | Line tesseract in the privacy card |
+| `--glass` / `--glass-border` | `rgb(255 255 255 / .72)` / `rgb(0 0 0 / .10)` | `rgb(29 26 36 / .66)` / `rgb(255 255 255 / .14)` | The one glass chip (“Copy All ⇧⌘C”) |
 
-Purple is reserved for interactive and brand moments. Everything else uses Apple’s neutral grays, so the screenshots carry the colour.
+**The hero exception.** The home hero card and the press key-art card are always dark, in both schemes (`color-scheme: dark` on the card). In light mode the card sits on the white page as a rounded black panel. In dark mode it bleeds into the near-black page with a 6 % white hairline. Nothing else on the site has a fixed scheme.
 
-### Type
+Purple is still only for interactive and brand moments. The hero glow and the wireframes are brand moments.
 
-System stack: `-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", …`. There are no web fonts.
+## Type
 
-| Role | Desktop | Mobile | Tailwind |
-|---|---|---|---|
-| Hero name | 72 / 1.02, bold, −0.03em | 48 | `text-7xl` / `text-5xl` |
-| Hero tagline | 32 / 1.2, semibold | 24 | `text-[32px]` / `text-2xl` |
-| Section and page title | 48 / 1.08, semibold | 34 | `text-5xl` / `text-[34px]` |
-| Split-row title | 40 | 30 | `text-[40px]` / `text-3xl` |
-| Help section (h2) | 30 | 30 | `text-3xl` |
-| Prose h2 | 28 | 28 | `text-[28px]` |
-| Lead | 21 / 1.5, muted | 18 | `text-[21px]` / `text-lg` |
-| Feature title (h3) | 20 | 20 | `text-xl` |
-| Body | 18 / 1.6 (prose 1.65) | 17 | `text-lg` |
-| Small body, cards | 15–17 | | `text-[15px]` / `text-base` |
-| Caption, nav, footer | 14 | | `text-sm` |
+The system stack only. Nothing new to download.
 
-Keyboard shortcuts are always `<kbd>` chips with Mac glyphs (⌘ ⇧ ⌥). Menu paths use semibold `▸` paths, and copy uses curly quotes and `…`.
+| Role | Desktop (≥ `lg`) | Below `lg` |
+|---|---|---|
+| Hero h1 | 72 / 1.02, bold, −0.033em, beside a 72 px icon | 46, beside a 56 px icon |
+| Hero tagline | 32 / 1.2, semibold, `--hero-accent` | 24 |
+| Hero lead | 21 / 1.5, `--hero-ink-2`, max 540 px | 18 |
+| Hero CTA | 17 semibold, white pill, min 50 px tall | same |
+| Press h1 (key-art card) | 64 | 46 |
+| Step numeral | 44 / 1, semibold, `brand-accent`, tabular | same |
+| Privacy card h2 | 44 | 30 |
+| Everything else | As in the v1 type table (`v1-original/README.md`) and the built site | |
 
-### Layout grid
+## Layout
 
-- Containers: `max-w-5xl` (1024) with `px-6` for most sections, as on atleast.app. `max-w-6xl` (1152) for the hero stage. `max-w-2xl` (672) for privacy, terms and support text, and about 720–760 for help articles.
-- Sections: `py-24` (96) on desktop and `py-16` (64) on mobile, alternating `bg` and `surface` bands. Everything sits on the 4 px Tailwind spacing scale.
-- Home features: a 3-column grid with 56 × 48 gaps, collapsing to 1 column below `md` (768).
-- Help index: a 208 px sticky “On this page” sidebar plus a 720 px article, with a 64 px gap. The sidebar hides below `md`.
-- The nav collapses to “Join Beta” plus a ☰ disclosure below `lg` (1024), as on atleast.app.
+- **Hero card:** `max-w-6xl` (1152), 24 px from the nav and the page edges (16 below `md`), radius 32 (28 below `lg`).
+  - ≥ `lg`: two columns, copy left and a 460 px art column right. Padding 48 / 40 / 48 / 72.
+  - Below `lg`: one centred column, copy first, then the art at 240 px.
+- **Window room:** directly under the hero, in `max-w-5xl`, with 40–48 px above it and no heading.
+  - ≥ `md`: the room is a 1080∶740 projected cube with the screenshot at 70 % width as its back face.
+  - Below `md`: the walls and labels hide, and it falls back to the v1 stage (gradient panel, window cropped on the right and bottom).
+- Then features (surface band), safe edits (bg), how it works (surface), privacy (bg, with the card), the facts strip and the footer. Sections keep `py-16 md:py-24`.
+- **Safe edits** uses a 4∶8 grid so the framed screenshot is at least half the row.
 
-### Components
+## Components
 
-- **Nav:** sticky, 64 px, translucent with a backdrop blur. App icon (30 px) and name on the left; Help · Press · Privacy · Terms · Support and a CTA pill on the right.
-- **Footer:** centred stack of the app icon (48), the CTA, “TesserClip is developed by [BrightDigit logo]” linking to brightdigit.com, the link row (Help · Press Kit · Privacy Policy · Terms of Use · Support · brightdigit.com), and “© 2026 BrightDigit. All rights reserved.”
-- **Icon tile:** 44 px rounded-xl bordered square holding a 24 pt SF Symbols-style stroke icon in the accent colour. Used for features, help section headings, support cards and privacy points.
-- **Stage:** the purple gradient panel with a window cutout. The hero crops the window at the bottom, and one callout labels Copy All (⇧⌘C).
-- **Step card:** numbered circle, title, one sentence and the kbd chips.
-- **FAQ:** `<details>` cards with a +/− marker. They need no JS, which suits the reference sites’ `script-src 'self'` CSP.
-- **Note callout:** a surface box with an icon, for tips and “Chose Not Now?”.
-- **How-to list:** big numbered steps joined by a vertical rule, plus a “path chip” showing System Settings ▸ Privacy & Security ▸ Paste from Other Apps.
-- **Press:** copyable description cards, an icon gallery, a screenshot grid, a fact-sheet `<dl>`, brand swatches and a contact block.
-- **Placeholder tag:** a yellow “PLACEHOLDER” / “TBD” label on anything that still needs real content. Remove it in the build.
+New or changed (spec §7 has the requirements):
 
-## Reference patterns reused
+- **`TesseractHero`.** The dark hero card. Its parts:
+  - the pill (§8 copy) on a dark tint;
+  - the icon and h1 on one row, then the tagline and lead;
+  - the `TestFlightButton` hero variant: a **white pill** with the TestFlight glyph in TesserClip purple and the one-line label “Join the beta on TestFlight”;
+  - the line under the CTA;
+  - on the right, the **static** tesseract image, decorative (`alt=""`, `aria-hidden`);
+  - a faint 56 px grid behind the art, masked to the glow.
 
-From **atleast.app**:
-- The Nav: fixed translucent bar, the `lg` collapse into a `<details>` menu, and the “Join Beta” pill.
-- The Footer: centred icon, the CTA, “is developed by” plus `BrightDigitLogo` (its SVG is inlined here verbatim), the link row and the © line.
-- The `PRIMARY_CTA` beta/App Store switch and the TestFlight button design, glyph included.
-- The `StepCard` and `SectionHeading` icon tiles.
-- The support page’s topic cards, `<details>` FAQ and “Still have questions?” card.
-- The `max-w-5xl` / `max-w-2xl` widths and `py-24` rhythm.
+  There are no annotations, labels or animation.
+- **`WindowRoom`.** The flat editor screenshot as the back face of a projected cube. The four walls are SVG polygons with hairline edges, and they carry real-text labels:
+  - top: New Window from Clipboard ⌘N
+  - right: Edit ▸ Substitutions
+  - bottom: Undo ⌘Z · Find ⌘F
+  - left: Plain text. No files.
 
-From **month.bar**:
-- Apple’s official Mac App Store badge SVGs, black and white, switched by colour scheme.
-- The centred hero: icon, name, subtitle, description, badge, screenshot.
-- The page set: index, privacy, support, terms, press, 404.
-- The press-kit structure: download zip, Key features/App description, App icons, Screenshots, Fact sheet, Brand colors, About the Developer, Contact.
-- The terms text structure. It’s adapted, with a Beta software section added.
-- The Apple-gray text palette.
+  The labels restate existing copy and are `aria-hidden`. The screenshot carries the §9.1 alt text. One glass chip, “Copy All ⇧⌘C”, points at the toolbar button. It’s the only Liquid Glass below the hero (functional-layer callout, HIG Materials).
+- **`ProjectedFrame`.** The same projection, shallower, around the Discard alert screenshot (lines and wall tints only, no tilt).
+- **`StepCard`.** A plain 44 px numeral replaces the numbered circle. The cards, copy and `Kbd` chips are unchanged.
+- **`PrivacyCard`.** The `PrivacySummary` points in a rounded card with the line tesseract on the right. It’s `brand-surface` in light and black (with a purple corner glow) in dark.
+  - Home: h2, paragraph and art on the first row, then the three points across.
+  - `/privacy/`: a compact version with the points stacked and a 120 px drawing.
+- **`TesseractMark`.** A 32 px line tesseract in `brand-accent`, above the breadcrumbs on both help pages and above the h1 on Support. It’s decorative and never repeats inside content.
+- **Help index header** sits on a slim full-bleed `brand-tint` band.
+- **Press:** the top section is a dark key-art card (h1, lead, a white-pill “Download Press Kit (.zip)”, and the art at 380 px). The App icon section shows all six exports. A new **Key art** section has the 2400×1260 download and a short **The name** note: the only place the tesser + clip idea is explained.
+- **404:** the line tesseract with an empty, dashed inner cell (132 px) replaces the clipboard glyph.
+- **Unchanged:** Nav (but with the real icons, and solid under reduced transparency or increased contrast), Footer, `FeatureCard` and `IconTile` (the features keep their line icons), `Kbd`, FAQ, `TopicCard`, `NoteCallout`, `HowToSteps`, `ShortcutTable`, `CopyCard`, `ColorSwatch`, `Prose`, facts strip.
+- **`AppIcon`** now uses the real exports: Default in light and Dark in dark (a `<picture>` with a `prefers-color-scheme` source). On the hero card it’s always Default.
 
-The difference: TesserClip uses its own icon purple instead of atleast’s dark-only palette or month.bar’s Apple blue, and supports both light and dark mode, as atleast doesn’t.
+## Accessibility built into the mockups
 
-## Assumptions
+- **No motion:** the hero is a still image. There are no animations or transitions anywhere under `prefers-reduced-motion`.
+- **`prefers-reduced-transparency: reduce`:** the nav becomes solid `brand-bg` and the glass chip becomes solid `brand-elevated`, with no `backdrop-filter`.
+- **`prefers-contrast: more`:**
+  - The same solid nav and chip.
+  - The hero text goes to white, and the card gets a 1 px white border.
+  - Card borders, wire lines and wall labels use `brand-text`.
+  - Screenshots and the privacy card get a 1 px `brand-text` outline.
+- **Alt text:**
+  - The editor screenshot: “A TesserClip window showing copied release notes, ready to edit.”
+  - The alert: “The “Discard your edits?” sheet, with Cancel and Discard buttons.”
+  - The key art has a descriptive alt.
+  - The hero art, wireframes, marks and wall labels are decorative and hidden.
 
-- **The app mockups are reused as-is.** They predate two later decisions: the window subtitle (source app · date) and the purple accent. They show blue buttons and no subtitle. `02-new-text` is superseded, because the subtitle indicator moved to a dot on the button, so it isn’t used anywhere.
-- “Paste from Other Apps” is the pane name from `.claude/memory/pasteboard-privacy-settings-url.md`. The memory confirms the URL but not the pane visually. The per-app choice is written as **Allow**, which is unverified.
-- **Privacy:** closing *any* window removes its draft, and the app has no network code, analytics or third-party SDKs. Both follow from the SPEC; neither is confirmed in code. The Apple paragraph covers opt-in crash and analytics sharing and TestFlight feedback generically.
-- **The website collects nothing.** The privacy page says tesserclip.com uses no cookies and asks for no personal information. Both reference sites run **Plausible**, so if tesserclip.com adds it, that paragraph must change (see Open questions).
-- **Terms:** the legal entity is “BrightDigit, LLC” and the governing law is the United States and Michigan, both copied from month.bar. I removed month.bar’s “personal, non-commercial use” limit, because it’s an odd fit for a text editor.
-- **Press facts:** the category is “Productivity”. The bio is shortened from month.bar’s. There’s no price row, because the brief says not to state one.
-- **Support known issues** are rewritten from CHANGELOG #41–#43 in user-facing words. #35 (the help site not being live) is left out, since this site fixes it.
-- Shortcuts come from SPEC §7, plus the standard ones the QA list relies on: ⌘G / ⇧⌘G, ⌘M and ⌘`.
+## Deviations from REVIEW.md
 
-## Open questions for Leo
-
-1. **TestFlight public link:** is there one, or will testers be invited by email? Every “Join Beta” CTA currently points to `#testflight-url`.
-2. **Website analytics:** add Plausible like month.bar and atleast.app, or stay analytics-free? This decides the “This website” paragraph in the privacy policy.
-3. **GitHub Issues:** will `brightdigit/TesserClip` be public, or should Support offer email only? The card is tagged “Repo TBD”.
-4. **Email addresses:** are `support@tesserclip.com` and `press@tesserclip.com` real yet?
-5. **Screenshots:** can we capture real ones from a beta build, in light and dark, with the purple accent and the window subtitle? The website’s dark mode currently shows light-mode app screenshots.
-6. **Icon export:** please export the final icon from Icon Composer (1024 PNG for Default, Dark, Clear and Tinted) for the hero, favicon, OG image and press kit.
-7. **System Settings wording:** confirm the pane name and the per-app control label on macOS 27 for the clipboard-permission article.
-8. **Terms:** confirm the legal entity name and governing law, and whether a custom Terms page is wanted at all, rather than Apple’s standard EULA alone.
-9. **Press kit zip:** what goes in it, and should the press page wait until launch?
-10. **Help links in the app:** the anchors used here are `/help#getting-started`, `#windows`, `#editor`, `#shortcuts`, `#permission` and `#faq`. Should any of them become separate pages?
+- **The optional footer exploded-icon image** isn’t drawn. It’s optional, and the footer stays the spec footer.
+- **“Copy. Fix. Paste.”** (A1’s footer line) isn’t used. It isn’t in the spec copy.
+- **“How it works ›”**, the ghost button beside A1’s CTA, is dropped to keep the hero to the §8 elements.
+- **The right wall** reads “Edit ▸ Substitutions” instead of A1’s “Copy All ⇧⌘C”, because the glass chip already says Copy All.
+- **The hero art format.** It’s exported as PNG and WebP. AVIF is left to `astro:assets`, which generates it from the PNG at build time.
+- **The help-index tint band** is drawn (REVIEW.md marks it optional).

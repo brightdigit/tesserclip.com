@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>OG image and key art (source)</title>
+<!-- Source for ../og-image-1200x630.png and ../tesseract-key-art-2400x1260.png (issue #17).
+     Render: Playwright, viewport 1200×630, page.locator('#card').screenshot().
+       og-image:  this file as is, deviceScaleFactor 1.
+       key art:   ?art=1 (no text, tesseract centred), deviceScaleFactor 2.
+     Static. Uses the exported hero render (../tesseract-hero-1200.png) and the real
+     Icon Composer Default export. -->
+<style>
+html,body{margin:0;background:#000}
+#card{position:relative;width:1200px;height:630px;overflow:hidden;color:#F5F5F7;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif;
+  background:radial-gradient(360px 300px at 905px 300px,rgba(130,70,220,.42),transparent 70%),radial-gradient(640px 460px at 900px 320px,rgba(74,29,122,.55),transparent 72%),#000}
+#card .grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:56px 56px;
+  -webkit-mask-image:radial-gradient(520px 380px at 900px 300px,#000,transparent 75%);mask-image:radial-gradient(520px 380px at 900px 300px,#000,transparent 75%)}
+.art{position:absolute;right:20px;top:-5px;width:640px;height:640px}
+.copy{position:absolute;left:84px;top:50%;transform:translateY(-50%);width:600px}
+.copy img{width:112px;height:112px;display:block}
+h1{font-size:92px;line-height:1;font-weight:700;letter-spacing:-.035em;margin:30px 0 0}
+p{font-size:32px;line-height:1.2;font-weight:600;letter-spacing:-.02em;margin:18px 0 0;color:#C9A8FF}
+p.url{font-size:22px;font-weight:500;letter-spacing:0;color:#A29CAE;margin-top:30px}
+body.art-only .copy{display:none}
+body.art-only .art{right:auto;left:50%;margin-left:-320px}
+body.art-only #card{background:radial-gradient(360px 300px at 600px 300px,rgba(130,70,220,.42),transparent 70%),radial-gradient(640px 460px at 600px 320px,rgba(74,29,122,.55),transparent 72%),#000}
+body.art-only #card .grid{-webkit-mask-image:radial-gradient(520px 380px at 600px 300px,#000,transparent 75%);mask-image:radial-gradient(520px 380px at 600px 300px,#000,transparent 75%)}
+</style>
+<!-- RENDER-ONLY: the Linux export box has no SF Pro, so Inter stands in. Re-export on a Mac
+     (delete this block) before go-live so the wordmark is set in SF Pro Display. -->
+<style id="render-only-font">#card{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Inter,sans-serif}</style>
+</head>
+<body>
+<script>if (location.search.includes('art=1')) document.body.className = 'art-only';</script>
+<div id="card">
+  <div class="grid"></div>
+  <img class="art" src="../tesseract-hero-1200.png" alt="">
+  <div class="copy">
+    <img src="../../icons/AppIcon-macOS-Default-1024@1x.png" alt="">
+    <h1>TesserClip</h1>
+    <p>Fix copied text before you paste it.</p>
+    <p class="url">tesserclip.com · for macOS 27</p>
+  </div>
+</div>
+</body>
+</html>

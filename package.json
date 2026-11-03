@@ -12,7 +12,7 @@
     "astro": "astro",
     "lighthouse": "lhci autorun",
     "check:links": "node scripts/check-links.js",
-    "generate:icons": "node scripts/generate-interim-icons.js",
+    "generate:icons": "node scripts/generate-icons.js",
     "generate:presskit": "node scripts/generate-press-kit-zip.js"
   },
   "dependencies": {

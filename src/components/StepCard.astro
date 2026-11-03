@@ -1,5 +1,5 @@
 ---
-// A numbered circle, title, one sentence and Kbd chips (spec §7).
+// A plain large numeral, title, one sentence and Kbd chips (spec §5, §7).
 import Kbd from './Kbd.astro';
 
 interface Props {
@@ -13,7 +13,7 @@ const { number, title, keys } = Astro.props;
 
 <li class="rounded-2xl border border-brand-border bg-brand-elevated p-6">
   <span
-    class="mb-3.5 inline-flex h-8 w-8 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--color-brand-accent)_12%,transparent)] text-sm font-semibold text-brand-accent"
+    class="mb-3.5 block text-[44px] leading-none font-semibold tracking-[-0.03em] text-brand-accent tabular-nums"
     aria-hidden="true">{number}</span
   >
   <h3 class="mb-1.5 text-lg"><span class="sr-only">Step {number}: </span>{title}</h3>

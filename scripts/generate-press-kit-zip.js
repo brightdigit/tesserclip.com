@@ -1,21 +1,23 @@
 #!/usr/bin/env node
 
 /**
- * Generate the press kit ZIP from the app icons and screenshots.
+ * Generate the press kit ZIP from the app icons, key art and screenshots.
  * Runs automatically as a prebuild step. Adapted from atleast.app.
  *
  *   public/downloads/tesserclip-press-kit.zip   (gitignored, rebuilt every build)
  *     README.txt     rendered from src/data/press.json (src/lib/press.ts)
- *     icons/         public/press/icons/   (SVGs + 1024/512 PNG renders)
+ *     icons/         public/press/icons/   (the six Icon Composer exports at
+ *                                          1024, plus 512 renders of Default and Dark)
+ *     key-art/       public/press/key-art/ (the 2400 × 1260 tesseract render)
  *     screenshots/   public/press/screenshots/
  *
- * The icon files in public/press/icons/ are committed, so dev builds don't
- * depend on sharp. They're only (re)rendered from src/assets/icon/ when one is
- * missing, or with `--force` (`npm run generate:presskit -- --force`).
+ * The files in public/press/ are committed, so dev builds don't depend on
+ * sharp. The 512 px renders are only (re)made from src/assets/icon/ when one
+ * is missing, or with `--force` (`npm run generate:presskit -- --force`).
  */
 
 import archiver from 'archiver';
-import { copyFileSync, createWriteStream, existsSync, mkdirSync, readFileSync } from 'fs';
+import { createWriteStream, existsSync, mkdirSync, readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { basename, dirname, join } from 'path';
 import { readReleaseInfo, renderPressReadme } from '../src/lib/press.ts';
@@ -34,38 +36,23 @@ const press = JSON.parse(readFileSync(join(rootDir, 'src', 'data', 'press.json')
 const releaseInfo = readReleaseInfo(readFileSync(join(rootDir, 'src', 'config.ts'), 'utf8'));
 const readme = renderPressReadme(press, releaseInfo);
 
-/** Copies the SVGs and renders the PNG/WebP icons that are missing. */
-async function ensureIcons() {
-  mkdirSync(iconDir, { recursive: true });
-  const variants = [
-    // The default icon carries both appearances through prefers-color-scheme;
-    // render its light appearance (as generate-interim-icons.js does).
-    {
-      svg: 'app-icon.svg',
-      stem: 'app-icon',
-      transform: (source) => source.replace(/<style>[\s\S]*?<\/style>/, '<style>.dk{display:none}</style>'),
-    },
-    { svg: 'app-icon-dark.svg', stem: 'app-icon-dark', transform: (source) => source },
+/** Checks the committed originals and renders the 512 px icons that are missing. */
+async function ensureFiles() {
+  const required = [
+    ...press.icons.map((icon) => join(iconDir, icon.file)),
+    join(publicDir, 'press', 'key-art', press.keyArt.file),
+    ...press.screenshots.map((shot) => join(publicDir, 'press', 'screenshots', shot.file)),
   ];
+  const missing = required.filter((file) => !existsSync(file));
+  if (missing.length) throw new Error(`press kit: missing ${missing.map((f) => f.slice(rootDir.length + 1)).join(', ')}`);
+
   let sharp;
-  for (const { svg, stem, transform } of variants) {
-    const source = join(iconSourceDir, svg);
-    const copy = join(iconDir, svg);
-    if (force || !existsSync(copy)) copyFileSync(source, copy);
-    const outputs = [
-      { file: `${stem}-1024.png`, size: 1024, format: 'png' },
-      { file: `${stem}-512.png`, size: 512, format: 'png' },
-      { file: `${stem}-1024.webp`, size: 1024, format: 'webp' },
-    ];
-    for (const { file, size, format } of outputs) {
-      const target = join(iconDir, file);
-      if (!force && existsSync(target)) continue;
-      sharp ??= (await import('sharp')).default;
-      const input = Buffer.from(transform(readFileSync(source, 'utf8')));
-      const image = sharp(input, { density: 72 * (size / 1024) * 2 }).resize(size, size);
-      await (format === 'png' ? image.png() : image.webp({ quality: 90 })).toFile(target);
-      console.log(`   rendered press/icons/${file}`);
-    }
+  for (const variant of ['Default', 'Dark']) {
+    const target = join(iconDir, `AppIcon-macOS-${variant}-512.png`);
+    if (!force && existsSync(target)) continue;
+    sharp ??= (await import('sharp')).default;
+    await sharp(join(iconSourceDir, `AppIcon-macOS-${variant}-1024.png`)).resize(512, 512).png().toFile(target);
+    console.log(`   rendered press/icons/${basename(target)}`);
   }
 }
 
@@ -73,7 +60,7 @@ console.log('📦 Generating press kit ZIP...');
 
 async function generatePressKit() {
   try {
-    await ensureIcons();
+    await ensureFiles();
     mkdirSync(outputDir, { recursive: true });
 
     const output = createWriteStream(outputPath);
@@ -90,8 +77,8 @@ async function generatePressKit() {
     // Favicons and the OG image never belong in the kit (spec §11).
     const EXCLUDED_NAMES = new Set([
       'apple-touch-icon.png',
-      'favicon.svg',
       'favicon-32x32.png',
+      'favicon-dark-32x32.png',
       'og.png',
     ]);
 
@@ -105,6 +92,7 @@ async function generatePressKit() {
     archive.append(readme, { name: 'README.txt' });
 
     archive.directory(iconDir, 'icons', filter);
+    archive.directory(join(publicDir, 'press', 'key-art'), 'key-art', filter);
     archive.directory(join(publicDir, 'press', 'screenshots'), 'screenshots', filter);
 
     await archive.finalize();

@@ -1,8 +1,8 @@
 ---
-// The home privacy band’s three points (spec §9.1 row 6): Nothing leaves your
-// Mac · No account · No tracking. The privacy page’s PrivacySummary has
-// different copy and layout in the designs (01-home vs 06-privacy), so the two
-// stay separate components.
+// The home privacy card’s three points (spec §9.1 row 6): Nothing leaves your
+// Mac · No account · No tracking. They sit in PrivacyCard’s `points` slot:
+// stacked below md, three across (icon above text) from md. The privacy
+// page’s PrivacySummary has different copy, so the two stay separate.
 import IconTile from '../IconTile.astro';
 import ChevronIcon from '../icons/ChevronIcon.astro';
 import HomeIcon from '../icons/HomeIcon.astro';
@@ -20,10 +20,10 @@ const points: { icon: HomeIconName; title: string; text: string; link?: { href: 
 ];
 ---
 
-<ul class="mt-12 grid gap-6 md:grid-cols-3">
+<ul class="mt-2 grid gap-[22px] md:-mt-2 md:grid-cols-3 md:gap-6">
   {
     points.map((p) => (
-      <li class="flex items-start gap-3.5">
+      <li class="flex items-start gap-3.5 md:flex-col md:gap-3">
         <IconTile>
           <HomeIcon name={p.icon} />
         </IconTile>

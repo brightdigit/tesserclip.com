@@ -1,6 +1,7 @@
 ---
-// The hero’s tint pill with a dot (spec §7). The copy comes from §8 through
-// heroCopy(); pass nothing to render nothing.
+// The hero’s pill with a dot (spec §7), on the dark hero stage: a 16 % white
+// border, hero-ink-2 text and a hero-accent dot. The copy comes from §8
+// through heroCopy(); pass nothing to render nothing.
 interface Props {
   text?: string | null;
   class?: string;
@@ -13,11 +14,11 @@ const { text, class: className } = Astro.props;
   text && (
     <p
       class:list={[
-        'inline-flex items-center gap-2 rounded-full border border-brand-tint-2 bg-brand-tint py-[5px] pr-3.5 pl-2.5 text-sm font-medium text-brand-accent',
+        'inline-flex items-center gap-2 rounded-full border border-hero-line bg-white/5 py-[5px] pr-[13px] pl-[11px] text-[13px] font-medium text-hero-ink-2 contrast-more:border-white contrast-more:text-white',
         className,
       ]}
     >
-      <span class="block h-2 w-2 rounded-full bg-brand-accent" aria-hidden="true" />
+      <span class="block h-[7px] w-[7px] rounded-full bg-hero-accent" aria-hidden="true" />
       {text}
     </p>
   )

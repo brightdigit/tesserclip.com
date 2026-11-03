@@ -1,0 +1,42 @@
+---
+// The home hero (spec §7, §9.1 row 1): the dark HeroStage with the pill, the
+// icon (always Default) and h1 on one row, the tagline, the lead, the hero CTA
+// (§8) and the line under it. No annotations, labels or animation.
+import { APP_NAME, MIN_MACOS, RELEASE_STATE, SHOW_LAUNCH_PILL, TAGLINE } from '../config';
+import { heroCopy } from '../lib/release-copy';
+import AppIcon from './AppIcon.astro';
+import EyebrowPill from './EyebrowPill.astro';
+import HeroStage from './HeroStage.astro';
+import PrimaryCta from './PrimaryCta.astro';
+
+const hero = heroCopy({ releaseState: RELEASE_STATE, showLaunchPill: SHOW_LAUNCH_PILL, minMacOS: MIN_MACOS });
+---
+
+<HeroStage labelledby="hero-title">
+  <EyebrowPill text={hero.pill} />
+  <div class="mt-5 flex items-center justify-center gap-3.5 lg:mt-[22px] lg:justify-start lg:gap-[18px]">
+    <AppIcon size={72} appearance="default" loading="eager" class="h-14 w-14 lg:h-[72px] lg:w-[72px]" />
+    <h1 id="hero-title" class="text-[46px] leading-[1.02] font-bold tracking-[-0.033em] text-hero-ink lg:text-7xl">
+      {APP_NAME}
+    </h1>
+  </div>
+  <p
+    class="mt-3.5 text-2xl leading-[1.2] font-semibold tracking-[-0.02em] text-hero-accent lg:mt-4 lg:text-[32px] contrast-more:text-white"
+  >
+    {TAGLINE}
+  </p>
+  <p
+    class="mx-auto mt-3.5 max-w-[560px] text-lg leading-normal text-hero-ink-2 lg:mx-0 lg:mt-[18px] lg:max-w-[540px] lg:text-[21px] contrast-more:text-white"
+  >
+    TesserClip opens straight to whatever you last copied, in a plain‑text editor. Edit it, copy it, and paste it where
+    it belongs.
+  </p>
+  {
+    RELEASE_STATE !== 'comingSoon' && (
+      <div class="mt-6 lg:mt-[30px]">
+        <PrimaryCta placement="hero" />
+      </div>
+    )
+  }
+  <p class="mt-3.5 text-sm leading-[1.6] text-hero-ink-3 lg:mt-4 contrast-more:text-white">{hero.requirementLine}</p>
+</HeroStage>

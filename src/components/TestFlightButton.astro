@@ -1,35 +1,44 @@
 ---
-// “Join the beta on / TestFlight” (spec §7). `filled` is the hero button,
-// `outlined` (surface fill) is the footer variant.
+// “Join the beta on TestFlight” (spec §7). Two variants:
+//   hero:     a white pill on the dark hero card, the glyph in TesserClip
+//             purple, one line;
+//   outlined: the footer button on `surface`, two lines.
+// Both open in a new tab and are named “Join the beta on TestFlight”.
 import { TESTFLIGHT_URL } from '../config';
+import HeroPillButton from './HeroPillButton.astro';
 import NewTabNote from './NewTabNote.astro';
 import TestFlightGlyph from './icons/TestFlightGlyph.astro';
 
 interface Props {
-  variant?: 'filled' | 'outlined';
+  variant?: 'hero' | 'outlined';
   class?: string;
 }
 
-const { variant = 'filled', class: className } = Astro.props;
-const filled = variant === 'filled';
+const { variant = 'hero', class: className } = Astro.props;
 ---
 
-<a
-  href={TESTFLIGHT_URL}
-  target="_blank"
-  rel="noopener noreferrer"
-  class:list={[
-    'inline-flex items-center gap-3 rounded-2xl border py-3 pr-6 pl-[18px] text-left leading-[1.2] transition-colors',
-    filled
-      ? 'border-transparent bg-brand-accent-strong text-white shadow-[var(--shadow-accent)] hover:brightness-110'
-      : 'border-brand-border bg-brand-surface text-brand-text hover:border-brand-accent',
-    className,
-  ]}
->
-  <TestFlightGlyph class={filled ? 'text-white' : 'text-brand-accent'} />
-  <span>
-    <span class:list={['block text-xs', filled ? 'text-white/90' : 'text-brand-muted']}>Join the beta on</span>
-    <span class="block text-[17px] font-semibold">TestFlight</span>
-  </span>
-  <NewTabNote />
-</a>
+{
+  variant === 'hero' ? (
+    <HeroPillButton href={TESTFLIGHT_URL} newTab class={className}>
+      <TestFlightGlyph slot="icon" size={28} class="text-[var(--hero-cta-glyph)]" />
+      Join the beta on TestFlight
+    </HeroPillButton>
+  ) : (
+    <a
+      href={TESTFLIGHT_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      class:list={[
+        'inline-flex items-center gap-3 rounded-2xl border border-brand-border bg-brand-surface py-3 pr-6 pl-[18px] text-left leading-[1.2] text-brand-text transition-colors hover:border-brand-accent',
+        className,
+      ]}
+    >
+      <TestFlightGlyph class="text-brand-accent" />
+      <span>
+        <span class="block text-xs text-brand-muted">Join the beta on</span>
+        <span class="block text-[17px] font-semibold">TestFlight</span>
+      </span>
+      <NewTabNote />
+    </a>
+  )
+}

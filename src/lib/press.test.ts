@@ -54,6 +54,16 @@ test('README carries the facts, descriptions, guidelines and contact', () => {
   for (const line of press.iconGuidelines) assert.ok(readme.includes(`- ${line}`));
   assert.ok(readme.includes('email support@tesserclip.com.'));
   assert.ok(readme.includes('Press page: https://tesserclip.com/press'));
+  assert.ok(readme.includes('key-art/      Tesseract key art, 2400 × 1260 (PNG)'));
+  assert.ok(readme.includes(press.name.text));
   assert.ok(!/press@/.test(readme));
   assert.ok(!/price/i.test(readme));
+});
+
+test('the icon section lists the six Icon Composer exports (spec §11)', () => {
+  assert.deepEqual(
+    press.icons.map((icon) => icon.name),
+    ['Default', 'Dark', 'Clear light', 'Clear dark', 'Tinted light', 'Tinted dark'],
+  );
+  for (const icon of press.icons) assert.match(icon.file, /^AppIcon-macOS-\w+-1024\.png$/);
 });

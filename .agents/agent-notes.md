@@ -19,3 +19,4 @@ A running log of Leo’s corrections and standing always/never directives for th
 - 2026-10-31 — Help URLs baked into the app (`/help`, `/help/clipboard-permission`) must never 404. Don’t move or rename them, and keep them in the link check’s required paths.
 - 2026-10-31 — CI runs on `pull_request` only. The one push trigger is the GitHub Pages deploy on `main`.
 - 2026-10-31 — Support is email only (`support@tesserclip.com`) while `REPO_PUBLIC` is `false`. Press reuses the support address, and there is no `press@`.
+- 2026-11-02 — Visual direction is the round-2 A1 Tesseract hybrid per REVIEW.md: static dark hero card, system fonts, no hero animation; A2 Depth stack and A3 Unfold were rejected.

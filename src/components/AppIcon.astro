@@ -1,7 +1,13 @@
 ---
-// The placeholder app icon (it follows the colour scheme). Decorative by
-// default (alt=""), because the app name usually sits next to it.
-import icon from '../assets/icon/app-icon.svg';
+// The real Icon Composer icon (spec §7): Default in light mode and Dark in
+// dark mode, switched by prefers-color-scheme. `appearance="default"` pins the
+// Default artwork (the dark hero card). Served at 2× the display size through
+// astro:assets. Decorative by default (alt=""), because the app name usually
+// sits next to it.
+import type { ImageMetadata } from 'astro';
+import { getImage } from 'astro:assets';
+import iconDark from '../assets/icon/AppIcon-macOS-Dark-1024.png';
+import iconDefault from '../assets/icon/AppIcon-macOS-Default-1024.png';
 
 interface Props {
   size: number;
@@ -9,18 +15,28 @@ interface Props {
   class?: string;
   loading?: 'eager' | 'lazy';
   fetchpriority?: 'high' | 'low' | 'auto';
+  /** `auto` follows the colour scheme; `default` always shows the Default artwork. */
+  appearance?: 'auto' | 'default';
 }
 
-const { size, alt = '', class: className, loading = 'lazy', fetchpriority } = Astro.props;
+const { size, alt = '', class: className, loading = 'lazy', fetchpriority, appearance = 'auto' } = Astro.props;
+
+const render = (src: ImageMetadata) =>
+  getImage({ src, width: size * 2, height: size * 2, format: 'webp' }).then((image) => image.src);
+const light = await render(iconDefault);
+const dark = appearance === 'auto' ? await render(iconDark) : null;
 ---
 
-<img
-  src={icon.src}
-  alt={alt}
-  width={size}
-  height={size}
-  loading={loading}
-  decoding="async"
-  fetchpriority={fetchpriority}
-  class:list={['shrink-0', className]}
-/>
+<picture>
+  {dark && <source srcset={dark} media="(prefers-color-scheme: dark)" />}
+  <img
+    src={light}
+    alt={alt}
+    width={size}
+    height={size}
+    loading={loading}
+    decoding="async"
+    fetchpriority={fetchpriority}
+    class:list={['block shrink-0', className]}
+  />
+</picture>
