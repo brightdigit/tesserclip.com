@@ -424,7 +424,7 @@ The design’s yellow “PLACEHOLDER” / “TBD” tags are design-only. **No p
 | Support “TestFlight feedback” card | hidden | shown | hidden |
 | Press fact sheet “Status” | “Coming soon” | “Beta on TestFlight (`VERSION_LABEL`)” | “Available on the Mac App Store” |
 | Press fact sheet “Distribution” | Mac App Store | Mac App Store (TestFlight beta) | Mac App Store |
-| JSON-LD `offers` / `downloadUrl` | omitted | `downloadUrl` = `TESTFLIGHT_URL` | `downloadUrl` = `APP_STORE_URL` (no price until Leo sets one) |
+| JSON-LD `offers` / `downloadUrl` | `offers` from `PRICE` only | `downloadUrl` = `TESTFLIGHT_URL`, `offers` from `PRICE` | `downloadUrl` = `APP_STORE_URL`, `offers` from `PRICE` |
 
 - The Mac App Store badge appears **only** in `released` with an `APP_STORE_ID`. Never show a greyed-out or “coming soon” Apple badge, because that misuses Apple’s artwork.
 - Every TestFlight and App Store link opens in a new tab with `rel="noopener noreferrer"`.
@@ -677,7 +677,7 @@ Adapt atleast.app’s `scripts/generate-press-kit-zip.js`:
 - **Sitemap:** `@astrojs/sitemap` writes `sitemap-index.xml` without the 404 page. `robots.txt` allows everything and lists the sitemap.
 - **JSON-LD:**
   - An `Organization` (BrightDigit, `COMPANY_URL`, logo, `contactPoint` email `SUPPORT_EMAIL`) on every page, as on atleast.app.
-  - A `SoftwareApplication` on `/` with `name`, `description`, `operatingSystem: "macOS 27 or later"`, `applicationCategory: "UtilitiesApplication"`, `author`/`publisher` BrightDigit, `url`, `image` and `downloadUrl` (§8). Leave out `offers` until a price is set.
+  - A `SoftwareApplication` on `/` with `name`, `description`, `operatingSystem: "macOS 27 or later"`, `applicationCategory: "UtilitiesApplication"`, `author`/`publisher` BrightDigit, `url`, `image` `downloadUrl` (§8) and `offers` (`{ '@type': 'Offer', price: PRICE, priceCurrency: PRICE_CURRENCY }`). `PRICE` is `'0'` (free) in config; set it to `''` to leave `offers` out. Google needs `offers` (or ratings) before it shows the software-app rich result.
   - A `BreadcrumbList` on both help pages.
 - No `apple-itunes-app` Smart App Banner meta: Safari on macOS doesn’t show it for Mac apps.
 - **CSP** (a meta tag, since GitHub Pages can’t set headers): `default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'`. Add `https://plausible.io` to `script-src` and `connect-src` only when Plausible is on.
@@ -854,7 +854,7 @@ These are carried over from the design README and haven’t been resolved yet. T
 4. **TestFlight feedback link.** Where should Support’s “How to send” point? The interim target is `https://testflight.apple.com/`.
 5. **JSON-LD category.** `UtilitiesApplication` is the closest schema.org value to App Store “Productivity”. Change it if Leo prefers another.
 6. **Placeholder guard in dev builds.** This spec makes the D28 guard fatal only for production and deploy builds, so PR CI can run before the link exists. Confirm that’s acceptable.
-7. **Price.** The site states no price, and JSON-LD `offers` is omitted until Leo sets one.
+7. **Price.** Settled 2026-11-03: JSON-LD `offers` has price `0` USD (`PRICE` in config). The visible site and the press fact sheet still state no price. Update `PRICE` if the App Store price changes.
 
 Resolved by decisions.md (2026-10-31):
 
