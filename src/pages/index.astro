@@ -35,7 +35,7 @@ import { softwareApplication, storeFact } from '../lib/release-copy';
 
 const title = 'TesserClip: Fix copied text before you paste it';
 const description =
-  'TesserClip opens straight to the text you last copied, in a plain-text editor, so you can fix it before you paste it. For macOS 27.';
+  'Copied text from a browser, a terminal or an AI agent? TesserClip opens straight to it in a plain-text editor, so you can fix it before you paste. For macOS 27.';
 
 const store = storeFact(RELEASE_STATE, APP_STORE_URL);
 const schema = softwareApplication({
@@ -67,7 +67,33 @@ const lead = 'text-lg leading-normal text-brand-muted md:text-[21px]';
   <!-- 2 · Window room (no heading, on the first screen) -->
   <WindowRoom image={editorWindow} alt="A TesserClip window showing copied release notes, ready to edit." />
 
-  <!-- 3 · Features -->
+  <!-- 3 · Copy sources: browser, terminal, AI agents -->
+  <section id="sources" class="pb-16 md:pb-24" aria-labelledby="sources-title">
+    <div class="mx-auto max-w-5xl px-5 md:px-6">
+      <div class={sectionHead}>
+        <h2 id="sources-title" class={sectionTitle}>From the browser, the terminal or an AI agent.</h2>
+        <p class:list={[lead, 'mt-4']}>
+          What you copy is rarely ready to paste. Fix it in TesserClip first, then paste it where it’s going.
+        </p>
+      </div>
+      <div class="grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-x-12">
+        <FeatureCard icon="browser" title="From a web page">
+          A paragraph, a code sample or an address arrives as plain text, without the page’s fonts, links and colours.
+          Trim it before it goes into an email or a doc.
+        </FeatureCard>
+        <FeatureCard icon="terminal" title="From the terminal">
+          Command output, log lines or a stack trace. Cut the noise, fix the line breaks and keep only what you meant to
+          share.
+        </FeatureCard>
+        <FeatureCard icon="agent" title="From an AI agent">
+          Copy a reply from Claude or another agentic tool, or a prompt you’re about to send. Rewrite it and check it,
+          then paste only what you agree with into a commit, a pull request or a chat.
+        </FeatureCard>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 · Features -->
   <section id="features" class="bg-brand-surface py-16 md:py-24" aria-labelledby="features-title">
     <div class="mx-auto max-w-5xl px-5 md:px-6">
       <div class={sectionHead}>
@@ -105,7 +131,7 @@ const lead = 'text-lg leading-normal text-brand-muted md:text-[21px]';
     </div>
   </section>
 
-  <!-- 4 · Safe edits -->
+  <!-- 5 · Safe edits -->
   <section class="py-16 md:py-24" aria-labelledby="safe-title">
     <div class="mx-auto grid max-w-5xl items-center gap-8 px-5 md:grid-cols-[minmax(0,4fr)_minmax(0,8fr)] md:gap-16 md:px-6">
       <div>
@@ -129,7 +155,7 @@ const lead = 'text-lg leading-normal text-brand-muted md:text-[21px]';
     </div>
   </section>
 
-  <!-- 5 · How it works -->
+  <!-- 6 · How it works -->
   <section id="how" class="bg-brand-surface py-16 md:py-24" aria-labelledby="how-title">
     <div class="mx-auto max-w-5xl px-5 md:px-6">
       <div class={sectionHead}>
@@ -137,7 +163,7 @@ const lead = 'text-lg leading-normal text-brand-muted md:text-[21px]';
         <p class:list={[lead, 'mt-4']}>No more pasting into TextEdit just to fix a typo.</p>
       </div>
       <ol class="grid grid-cols-1 gap-4 md:grid-cols-4">
-        <StepCard number={1} title="Copy" keys={['⌘C']}>Copy text in any app, the way you always do.</StepCard>
+        <StepCard number={1} title="Copy" keys={['⌘C']}>Copy text in a browser, a terminal, an AI chat or any other app.</StepCard>
         <StepCard number={2} title="Open TesserClip" keys={['⌘Tab']}
           >Click it in the Dock or switch to it. Your text is waiting.</StepCard
         >
@@ -151,7 +177,7 @@ const lead = 'text-lg leading-normal text-brand-muted md:text-[21px]';
     </div>
   </section>
 
-  <!-- 6 · Privacy -->
+  <!-- 7 · Privacy -->
   <section class="py-16 md:py-24" aria-labelledby="privacy-title">
     <div class="mx-auto max-w-5xl px-5 md:px-6">
       <PrivacyCard>
@@ -167,7 +193,7 @@ const lead = 'text-lg leading-normal text-brand-muted md:text-[21px]';
     </div>
   </section>
 
-  <!-- 7 · Facts strip -->
+  <!-- 8 · Facts strip -->
   <div class="mx-auto max-w-5xl px-5 md:px-6">
     <ul
       class="flex flex-col flex-wrap items-center justify-center gap-2.5 py-7 text-[15px] text-brand-muted md:flex-row md:gap-7"
