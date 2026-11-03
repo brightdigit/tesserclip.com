@@ -2,7 +2,7 @@
 # (Node 24 from .mise.toml); otherwise falls back to whatever npm is on PATH.
 NPM := $(if $(shell command -v mise 2>/dev/null),mise exec -- npm,npm)
 
-SCRIPTS := dev build preview lighthouse test check\:links generate\:icons
+SCRIPTS := dev build preview lighthouse test check\:links generate\:icons generate\:presskit
 
 .PHONY: install clean build-production check-links $(SCRIPTS)
 

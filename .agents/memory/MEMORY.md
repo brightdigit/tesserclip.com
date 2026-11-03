@@ -19,3 +19,4 @@ This directory is the memory store for tesserclip.com. It’s versioned in git, 
 - [Lighthouse as root](lighthouse-as-root.md) — `make lighthouse` needs `--no-sandbox` and Playwright’s Chromium in root agent containers
 - [Restate Tailwind’s layer order in `@layer` style blocks](css-layer-order-inline-styles.md) — an inlined `@layer components` block can sort below preflight; prose rules go in `components` with `:where()`
 - [Legal content tokens](legal-content-tokens.md) — `{{SUPPORT_EMAIL}}` in legal Markdown, frontmatter comments, the analytics-copy guard, and why “deleting the app deletes drafts” isn’t claimed
+- [Press kit zip](press-kit-zip.md) — page and zip README share src/lib/press.ts + press.json; the script regex-reads config.ts; icon renders are committed (`--force` to redo)
