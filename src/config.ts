@@ -33,7 +33,7 @@ export const PRESS_EMAIL = SUPPORT_EMAIL; // D20
 // Flip to true to go public, then submit the sitemap in Search Console.
 export const SEARCH_INDEXING = false;
 
-export const ANALYTICS: Analytics = { provider: 'none' };
+export const ANALYTICS: Analytics = { provider: 'plausible', domain: 'tesserclip.com' }; // cookieless; privacy.md says so
 
 export const COMPANY_NAME = 'BrightDigit';
 export const COMPANY_LEGAL_NAME = 'BrightDigit, LLC';

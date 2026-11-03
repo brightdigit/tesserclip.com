@@ -87,7 +87,7 @@ Calm, plain and short. Use the same words the app uses (“window”, “draft�
 - TypeScript runs in strict mode (`astro/tsconfigs/strict`).
 - **Node 24** is pinned in `.mise.toml`. `make` is the front door. Agents never call `npm` directly, only through `make` or `mise exec -- npm …`.
 - Help articles and legal pages are **Astro content collections** written in Markdown or MDX.
-- The site makes **no third-party requests at runtime**: no web fonts, no CDNs, no analytics (D7) and no embeds.
+- The site makes **one third-party request at runtime**: Plausible analytics (`plausible.io`, cookieless; turned on 2026-11-03). No web fonts, no CDNs and no embeds.
 - Pages need **no JavaScript** to work. The nav menu and FAQs use `<details>`. Any small script is optional progressive enhancement, served from `'self'`.
 
 ### Versions
@@ -178,7 +178,7 @@ node = "24"
 - **TestFlight guard (D28).** `TESTFLIGHT_URL` starts as the exported placeholder constant. When `RELEASE_STATE === 'beta'` and `TESTFLIGHT_URL` still equals the placeholder, a **production build fails** with a clear error. A production build is the deploy job on `main`, `make build-production`, or any build with `SITE_DEPLOY=1`. A placeholder link can never be published.
   - Development builds (`make dev`, `make build`, PR CI) print a one-line warning and keep going, so agents can build and check pages before Leo fills in the link. *This dev-build allowance is how D28 is applied; Leo can tighten it in review.*
 - **App Store guard.** When `RELEASE_STATE === 'released'` and `APP_STORE_ID` is empty, **every** build fails, as on atleast.app.
-- **Analytics off (D7).** `ANALYTICS` defaults to `{ provider: 'none' }`. While it’s off, no analytics script or analytics CSP host appears anywhere in `dist/`. Switching to Plausible must be a one-line change here, and that change must also update the CSP and the privacy page’s “This website” paragraph (the build fails if Plausible is on and the privacy copy still says “doesn’t run analytics”).
+- **Analytics (D7, updated 2026-11-03).** `ANALYTICS` is `{ provider: 'plausible', domain: 'tesserclip.com' }`, which loads `https://plausible.io/js/script.outbound-links.js` (pageviews plus outbound-link clicks, as on atleast.app). When it’s `{ provider: 'none' }`, no analytics script or analytics CSP host appears anywhere in `dist/`. Switching to Plausible must be a one-line change here, and that change must also update the CSP and the privacy page’s “This website” paragraph (the build fails if Plausible is on and the privacy copy still says “doesn’t run analytics”).
 - **`REPO_PUBLIC` (D12/D18)** defaults to `false`. While it’s `false`, no page links to GitHub, the source or Issues.
 
 ### Schema
@@ -207,7 +207,7 @@ export const SUPPORT_EMAIL = 'support@tesserclip.com';
 export const PRESS_EMAIL = SUPPORT_EMAIL;            // D20
 
 export type Analytics = { provider: 'none' } | { provider: 'plausible'; domain: string };
-export const ANALYTICS: Analytics = { provider: 'none' };
+export const ANALYTICS: Analytics = { provider: 'plausible', domain: 'tesserclip.com' };
 
 export const COMPANY_NAME = 'BrightDigit';
 export const COMPANY_LEGAL_NAME = 'BrightDigit, LLC';
@@ -502,7 +502,7 @@ Changes from the design (2026-11-03): the copy leans into where text comes from 
 
 Changes from the design:
 
-1. **This website (D7)** now reads: “tesserclip.com is a static website hosted on GitHub Pages. It doesn’t use cookies, run analytics or ask for personal information.”
+1. **This website (D7)** says the site is static on GitHub Pages, uses no cookies and asks for no personal information. It then names Plausible and what it records (page, referrer, browser, OS, device type, country, outbound-link clicks), with no cookies, no stored IP address and no advertising or cross-site use.
 2. “Clipboard permission” links to `/help/clipboard-permission/`. Apple’s Privacy Policy links to `https://www.apple.com/legal/privacy/`.
 
 Facts behind this page, checked in the app repo on 2026-10-31:
@@ -815,7 +815,7 @@ Run this before each PR. Wave 2 runs all of it across the site. Put the results 
 - [ ] With `prefers-reduced-transparency: reduce` and with `prefers-contrast: more` (Chromium: CDP `Emulation.setEmulatedMedia`; Playwright `contrast: 'more'`), the nav and chip have no `backdrop-filter`, and the §13 contrast fallbacks apply.
 - [ ] No request loads a font file (`grep -r "@font-face" dist/` finds nothing).
 - [ ] Each of the three `RELEASE_STATE` values renders the §8 table correctly. In released, the hero shows the white App Store badge in both schemes.
-- [ ] `grep -ri plausible dist/` finds nothing, and no request leaves the origin (check the DevTools network panel).
+- [ ] Every page loads `plausible.io/js/script.outbound-links.js`, the CSP allows `https://plausible.io`, and Plausible is the only request that leaves the origin (check the DevTools network panel).
 - [ ] No GitHub or Issues links appear anywhere while `REPO_PUBLIC` is `false`.
 - [ ] No `press@` appears anywhere, and every email is `support@tesserclip.com`.
 - [ ] No “PLACEHOLDER” or “TBD” text appears in `dist/` (except `TESTFLIGHT_PLACEHOLDER` in dev builds).
@@ -839,7 +839,7 @@ These are out of scope for v1 (D14, D25, D7):
 - SEO article collections, a blog, guides or comparison pages
 - Localisation (the site is English only)
 - Help search (no Pagefind)
-- Analytics. The switch exists but stays off.
+- Analytics beyond Plausible pageviews and outbound-link clicks.
 - Any backend, forms, newsletter or email capture
 - A theme toggle (the site follows the system)
 - A release notes or changelog page, an appcast or downloads (Stewed-only features)
@@ -863,7 +863,7 @@ These are carried over from the design README and haven’t been resolved yet. T
 Resolved by decisions.md (2026-10-31):
 
 - TestFlight link: a placeholder in config with a build guard. The maintainer fills it in (D17/D28).
-- Analytics: none for now, behind a switch (D7).
+- Analytics: cookieless Plausible, on since 2026-11-03 (D7).
 - GitHub Issues: hidden behind `REPO_PUBLIC`, so support is email only (D12/D18).
 - Emails: `support@tesserclip.com`. Press reuses it (D11/D20).
 - Icon export: the maintainer assets issue (D13).

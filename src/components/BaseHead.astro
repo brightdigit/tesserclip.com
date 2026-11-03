@@ -80,4 +80,5 @@ const organization = {
 
 <JsonLd schema={organization} />
 
-{plausible && <script is:inline defer data-domain={plausible.domain} src="https://plausible.io/js/script.js" />}
+{/* Outbound-link clicks (TestFlight, App Store) are counted as events, as on atleast.app. */}
+{plausible && <script is:inline defer data-domain={plausible.domain} src="https://plausible.io/js/script.outbound-links.js" />}
