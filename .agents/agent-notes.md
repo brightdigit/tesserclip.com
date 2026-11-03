@@ -20,3 +20,4 @@ A running log of Leo’s corrections and standing always/never directives for th
 - 2026-10-31 — CI runs on `pull_request` only. The one push trigger is the GitHub Pages deploy on `main`.
 - 2026-10-31 — Support is email only (`support@tesserclip.com`) while `REPO_PUBLIC` is `false`. Press reuses the support address, and there is no `press@`.
 - 2026-11-02 — Visual direction is the round-2 A1 Tesseract hybrid per REVIEW.md: static dark hero card, system fonts, no hero animation; A2 Depth stack and A3 Unfold were rejected.
+- 2026-11-03 — Hide the site from search engines for now: keep `SEARCH_INDEXING = false` (every page `noindex, nofollow`) until Leo says to go public. Don’t block crawling in `robots.txt`.
