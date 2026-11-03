@@ -50,9 +50,11 @@ const base = {
   companyUrl: 'https://brightdigit.com',
   testflightUrl: TF,
   appStoreUrl: AS,
+  price: '0',
+  priceCurrency: 'USD',
 };
 
-test('softwareApplication: required fields and no offers', () => {
+test('softwareApplication: required fields', () => {
   const schema = softwareApplication({ ...base, releaseState: 'beta' });
   assert.equal(schema['@type'], 'SoftwareApplication');
   assert.equal(schema.operatingSystem, 'macOS 27 or later');
@@ -60,7 +62,11 @@ test('softwareApplication: required fields and no offers', () => {
   assert.equal(schema.url, 'https://tesserclip.com/');
   assert.deepEqual(schema.publisher, { '@type': 'Organization', name: 'BrightDigit', url: 'https://brightdigit.com' });
   assert.equal(schema.downloadUrl, TF);
-  assert.equal('offers' in schema, false);
+  assert.deepEqual(schema.offers, { '@type': 'Offer', price: '0', priceCurrency: 'USD' });
+});
+
+test('softwareApplication: no offers when the price is empty', () => {
+  assert.equal('offers' in softwareApplication({ ...base, releaseState: 'beta', price: '' }), false);
 });
 
 test('softwareApplication: downloadUrl follows the state', () => {

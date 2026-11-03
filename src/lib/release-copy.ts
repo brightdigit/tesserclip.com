@@ -60,9 +60,12 @@ export interface SoftwareApplicationInput {
   companyUrl: string;
   testflightUrl: string;
   appStoreUrl: string;
+  /** Offer price as a decimal string ('0' while free); '' leaves `offers` out. */
+  price: string;
+  priceCurrency: string;
 }
 
-/** The SoftwareApplication JSON-LD for `/`. No `offers` until a price is set (spec §12, §18.7). */
+/** The SoftwareApplication JSON-LD for `/`. `offers` only when a price is set (spec §12). */
 export function softwareApplication(input: SoftwareApplicationInput): Record<string, unknown> {
   const company = { '@type': 'Organization', name: input.companyName, url: input.companyUrl };
   const url = downloadUrl(input.releaseState, input.testflightUrl, input.appStoreUrl);
@@ -78,5 +81,6 @@ export function softwareApplication(input: SoftwareApplicationInput): Record<str
     url: input.siteUrl.endsWith('/') ? input.siteUrl : `${input.siteUrl}/`,
     image: input.imageUrl,
     ...(url ? { downloadUrl: url } : {}),
+    ...(input.price ? { offers: { '@type': 'Offer', price: input.price, priceCurrency: input.priceCurrency } } : {}),
   };
 }

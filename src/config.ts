@@ -17,6 +17,8 @@ export const RELEASE_STATE: ReleaseState = 'beta'; // D8: launch in beta
 
 export const TESTFLIGHT_PLACEHOLDER = 'https://testflight.apple.com/join/PLACEHOLDER';
 export const TESTFLIGHT_URL: string = 'https://testflight.apple.com/join/WX95KgBZ'; // public beta link (#9)
+export const PRICE: string = '0'; // JSON-LD offers price in PRICE_CURRENCY; '' leaves offers out (spec §12)
+export const PRICE_CURRENCY = 'USD';
 export const APP_STORE_ID: string = ''; // numeric, e.g. '6760000000'
 export const APP_STORE_URL = APP_STORE_ID ? `https://apps.apple.com/app/id${APP_STORE_ID}` : '';
 export const SHOW_LAUNCH_PILL = true; // released state: “New on the Mac App Store”
