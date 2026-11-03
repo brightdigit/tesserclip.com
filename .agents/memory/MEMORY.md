@@ -18,3 +18,4 @@ This directory is the memory store for tesserclip.com. It’s versioned in git, 
 - [`node --test` runs TypeScript directly](node-test-type-stripping.md) — keep `src/lib/` erasable TS; config.ts is build-time only; check-links regex-reads APP_HELP_PATHS
 - [Lighthouse as root](lighthouse-as-root.md) — `make lighthouse` needs `--no-sandbox` and Playwright’s Chromium in root agent containers
 - [Restate Tailwind’s layer order in `@layer` style blocks](css-layer-order-inline-styles.md) — an inlined `@layer components` block can sort below preflight; prose rules go in `components` with `:where()`
+- [Legal content tokens](legal-content-tokens.md) — `{{SUPPORT_EMAIL}}` in legal Markdown, frontmatter comments, the analytics-copy guard, and why “deleting the app deletes drafts” isn’t claimed
