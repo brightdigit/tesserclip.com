@@ -1,0 +1,43 @@
+---
+// The home privacy band’s three points (spec §9.1 row 6): Nothing leaves your
+// Mac · No account · No tracking. The privacy page’s tinted summary box
+// (PrivacySummary, #4) shares the copy but not the layout; see the PR notes.
+import IconTile from '../IconTile.astro';
+import ChevronIcon from '../icons/ChevronIcon.astro';
+import HomeIcon from '../icons/HomeIcon.astro';
+import type { HomeIconName } from '../icons/home-icons';
+
+const points: { icon: HomeIconName; title: string; text: string; link?: { href: string; label: string } }[] = [
+  { icon: 'lock', title: 'Nothing leaves your Mac', text: 'Your text isn’t sent to BrightDigit or anyone else.' },
+  { icon: 'noAccount', title: 'No account', text: 'There’s nothing to sign up for or sign in to.' },
+  {
+    icon: 'noTracking',
+    title: 'No tracking',
+    text: 'No analytics or ads in the app.',
+    link: { href: '/privacy/', label: 'Privacy Policy' },
+  },
+];
+---
+
+<ul class="mt-12 grid gap-6 md:grid-cols-3">
+  {
+    points.map((p) => (
+      <li class="flex items-start gap-3.5">
+        <IconTile>
+          <HomeIcon name={p.icon} />
+        </IconTile>
+        <div>
+          <h3 class="mt-0.5 mb-1 text-[17px]">{p.title}</h3>
+          <p class="text-[15px] leading-normal text-brand-muted">
+            {p.text}
+            {p.link && (
+              <a href={p.link.href} class="text-brand-accent underline decoration-1 underline-offset-2">
+                {p.link.label}<ChevronIcon />
+              </a>
+            )}
+          </p>
+        </div>
+      </li>
+    ))
+  }
+</ul>

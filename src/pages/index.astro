@@ -1,20 +1,225 @@
 ---
-// Stub from the scaffold (#1). #2 replaces the body; keep the title and description (spec §9.1).
+// Home (spec §9.1). Copy is verbatim from .agents/designs/01-home.html; every
+// release-state difference (§8) comes from src/lib/release-copy.ts.
+import editorWindow from '../assets/screens/01-editor-window.png';
+import discardWindow from '../assets/screens/04-discard-alert-window.png';
 import AppIcon from '../components/AppIcon.astro';
+import EyebrowPill from '../components/EyebrowPill.astro';
+import FeatureCard from '../components/FeatureCard.astro';
+import JsonLd from '../components/JsonLd.astro';
+import Kbd from '../components/Kbd.astro';
+import NewTabNote from '../components/NewTabNote.astro';
 import PrimaryCta from '../components/PrimaryCta.astro';
-import { APP_NAME, TAGLINE } from '../config';
+import Stage from '../components/Stage.astro';
+import StepCard from '../components/StepCard.astro';
+import HomePrivacyPoints from '../components/home/HomePrivacyPoints.astro';
+import ChevronIcon from '../components/icons/ChevronIcon.astro';
+import HomeIcon from '../components/icons/HomeIcon.astro';
+import {
+  APP_NAME,
+  APP_STORE_URL,
+  COMPANY_NAME,
+  COMPANY_URL,
+  MIN_MACOS,
+  OG_IMAGE_URL,
+  RELEASE_STATE,
+  SHOW_LAUNCH_PILL,
+  SITE_URL,
+  TAGLINE,
+  TESTFLIGHT_URL,
+} from '../config';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { heroCopy, softwareApplication, storeFact } from '../lib/release-copy';
 
 const title = 'TesserClip: Fix copied text before you paste it';
 const description =
   'TesserClip opens straight to the text you last copied, in a plain-text editor, so you can fix it before you paste it. For macOS 27.';
+
+const hero = heroCopy({ releaseState: RELEASE_STATE, showLaunchPill: SHOW_LAUNCH_PILL, minMacOS: MIN_MACOS });
+const store = storeFact(RELEASE_STATE, APP_STORE_URL);
+const schema = softwareApplication({
+  releaseState: RELEASE_STATE,
+  name: APP_NAME,
+  description,
+  minMacOS: MIN_MACOS,
+  siteUrl: SITE_URL,
+  imageUrl: OG_IMAGE_URL,
+  companyName: COMPANY_NAME,
+  companyUrl: COMPANY_URL,
+  testflightUrl: TESTFLIGHT_URL,
+  appStoreUrl: APP_STORE_URL,
+});
+
+const sectionHead = 'mx-auto mb-10 max-w-[720px] md:mb-16 md:text-center';
+const sectionTitle = 'text-[34px] leading-[1.08] tracking-[-0.028em] md:text-5xl';
+const lead = 'text-lg leading-normal text-brand-muted md:text-[21px]';
 ---
 
 <BaseLayout title={title} description={description}>
-  <section class="mx-auto max-w-6xl px-5 py-16 text-center md:px-6 md:py-24">
-    <AppIcon size={120} loading="eager" class="mx-auto mb-5 h-28 w-28 md:h-[120px] md:w-[120px]" />
-    <h1 class="text-5xl font-bold tracking-[-0.03em] md:text-7xl">{APP_NAME}</h1>
-    <p class="mt-3 text-2xl font-semibold md:text-[32px]">{TAGLINE}</p>
-    <div class="mt-9 flex justify-center"><PrimaryCta /></div>
+  <JsonLd slot="head" schema={schema} />
+
+  <!-- 1 · Hero and 2 · Stage -->
+  <section class="overflow-hidden pt-12 text-center md:pt-[88px]" aria-labelledby="hero-title">
+    <div class="mx-auto max-w-6xl px-5 md:px-6">
+      <EyebrowPill text={hero.pill} />
+      <AppIcon
+        size={120}
+        loading="eager"
+        class="mx-auto mt-6 mb-4 h-28 w-28 drop-shadow-[0_18px_30px_rgb(46_14_84/0.28)] md:mt-7 md:mb-5 md:h-[120px] md:w-[120px]"
+      />
+      <h1 id="hero-title" class="text-5xl leading-[1.02] font-bold tracking-[-0.03em] md:text-7xl">{APP_NAME}</h1>
+      <p class="mt-3 text-2xl leading-[1.2] font-semibold tracking-[-0.02em] md:text-[32px]">{TAGLINE}</p>
+      <p class:list={[lead, 'mx-auto mt-[18px] max-w-[600px]']}>
+        TesserClip opens straight to whatever you last copied, in a plain‑text editor. Edit it, copy it, and paste it
+        where it belongs.
+      </p>
+      {
+        RELEASE_STATE !== 'comingSoon' && (
+          <div class="mt-9 flex flex-col items-center justify-center gap-3.5 md:flex-row md:gap-5">
+            <PrimaryCta placement="hero" />
+          </div>
+        )
+      }
+      <p class="mt-[18px] text-sm text-brand-muted">{hero.requirementLine}</p>
+      <Stage
+        class="mt-12 md:mt-[72px]"
+        image={editorWindow}
+        alt="A TesserClip window showing copied release notes, ready to edit."
+        callout={{ label: 'Copy All', keys: '⇧⌘C' }}
+        priority
+      />
+    </div>
   </section>
+
+  <!-- 3 · Features -->
+  <section id="features" class="py-16 md:py-24" aria-labelledby="features-title">
+    <div class="mx-auto max-w-5xl px-5 md:px-6">
+      <div class={sectionHead}>
+        <h2 id="features-title" class={sectionTitle}>Made for the moment between copy and paste.</h2>
+        <p class:list={[lead, 'mt-4']}>
+          TesserClip gives the text you just copied a clean place to be fixed. There are no files to save and no settings
+          to learn.
+        </p>
+      </div>
+      <div class="grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-x-12 md:gap-y-14">
+        <FeatureCard icon="clipboard" title="Opens to your last copy">
+          Open TesserClip and the text you just copied is already in a window, with the cursor at the end, ready to fix.
+        </FeatureCard>
+        <FeatureCard icon="windows" title="Every window is its own draft">
+          Each window keeps the text it opened with. Copying something new never replaces it. Open the new text in
+          another window with <Kbd keys="⌘N" />.
+        </FeatureCard>
+        <FeatureCard icon="text" title="A plain‑text editor">
+          Rich text arrives as plain text. Smart quotes, dashes and other substitutions stay off until you turn them on in <span class="font-medium whitespace-nowrap text-brand-text">Edit<span aria-hidden="true"> ▸ </span><span class="sr-only">, </span>Substitutions</span>.
+        </FeatureCard>
+        <FeatureCard icon="copy" title="Copy All">
+          <Fragment slot="title-after">{' '}<Kbd keys="⇧⌘C" /></Fragment>
+          Copy the whole window from the toolbar or the Edit menu in one step. Your selection and cursor stay where they
+          were.
+        </FeatureCard>
+        <FeatureCard icon="shield" title="Asks before losing edits">
+          Close a window with edits you haven’t copied and TesserClip asks first. If you’ve already copied them, it just
+          closes.
+        </FeatureCard>
+        <FeatureCard icon="newText" title="Knows when there’s new text">
+          A dot on New Window from Clipboard tells you there’s something new. TesserClip checks that it’s text without
+          reading what it says.
+        </FeatureCard>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 · Split row -->
+  <section class="bg-brand-surface py-16 md:py-24" aria-labelledby="safe-title">
+    <div class="mx-auto grid max-w-5xl items-center gap-8 px-5 md:grid-cols-[5fr_7fr] md:gap-16 md:px-6">
+      <div>
+        <h2 id="safe-title" class="text-3xl tracking-[-0.026em] md:text-[40px]">Your edits are safe until they’re copied.</h2>
+        <p class="mt-[18px] text-[19px] leading-[1.55] text-brand-muted">
+          Close a window you’ve changed and TesserClip checks with you first. Cancel is one <Kbd keys="esc" /> away, and nothing
+          skips the question.
+        </p>
+        <ul class="mt-7 grid gap-3.5">
+          <li class="flex gap-3 text-[17px]">
+            <HomeIcon name="restore" class="mt-0.5 h-[22px] w-[22px] text-brand-accent" />
+            <span>Quit with <Kbd keys="⌘Q" /> any time. Your windows and their text come back next time.</span>
+          </li>
+          <li class="flex gap-3 text-[17px]">
+            <HomeIcon name="copy" class="mt-0.5 h-[22px] w-[22px] text-brand-accent" />
+            <span>Already copied your edits? The window closes without asking.</span>
+          </li>
+        </ul>
+      </div>
+      <Stage
+        variant="split"
+        image={discardWindow}
+        alt="The “Discard your edits?” sheet, with Cancel and Discard buttons."
+      />
+    </div>
+  </section>
+
+  <!-- 5 · How it works -->
+  <section id="how" class="py-16 md:py-24" aria-labelledby="how-title">
+    <div class="mx-auto max-w-5xl px-5 md:px-6">
+      <div class={sectionHead}>
+        <h2 id="how-title" class={sectionTitle}>How it works</h2>
+        <p class:list={[lead, 'mt-4']}>No more pasting into TextEdit just to fix a typo.</p>
+      </div>
+      <ol class="grid grid-cols-1 gap-4 md:grid-cols-4">
+        <StepCard number={1} title="Copy" keys={['⌘C']}>Copy text in any app, the way you always do.</StepCard>
+        <StepCard number={2} title="Open TesserClip" keys={['⌘Tab']}
+          >Click it in the Dock or switch to it. Your text is waiting.</StepCard
+        >
+        <StepCard number={3} title="Fix it" keys={['⌘Z', '⌘F']}
+          >Edit in plain text, with Undo, Find and spelling built in.</StepCard
+        >
+        <StepCard number={4} title="Copy it back" keys={['⇧⌘C', '⌘V']}
+          >Copy the whole window, switch back, and paste.</StepCard
+        >
+      </ol>
+    </div>
+  </section>
+
+  <!-- 6 · Privacy -->
+  <section class="bg-brand-surface py-16 md:py-24" aria-labelledby="privacy-title">
+    <div class="mx-auto max-w-5xl px-5 md:px-6">
+      <div class="mx-auto max-w-[720px] md:text-center">
+        <h2 id="privacy-title" class={sectionTitle}>Your text stays on your Mac.</h2>
+        <p class:list={[lead, 'mt-4']}>
+          TesserClip reads the clipboard only when it opens a window. Drafts are saved in the app’s own container on your
+          Mac, so your windows come back after you quit.
+        </p>
+      </div>
+      <HomePrivacyPoints />
+    </div>
+  </section>
+
+  <!-- 7 · Facts strip -->
+  <div class="mx-auto max-w-5xl px-5 md:px-6">
+    <ul
+      class="flex flex-col flex-wrap items-center justify-center gap-2.5 py-7 text-[15px] text-brand-muted md:flex-row md:gap-7"
+    >
+      <li class="inline-flex items-center gap-2">
+        <HomeIcon name="laptop" class="h-5 w-5 text-brand-accent" />Requires macOS 27 or later
+      </li>
+      <li class="inline-flex items-center gap-2">
+        <HomeIcon name="download" class="h-5 w-5 text-brand-accent" />
+        {
+          store.href ? (
+            <a href={store.href} target="_blank" rel="noopener noreferrer" class="text-brand-accent hover:underline">
+              {store.label}
+              <NewTabNote />
+            </a>
+          ) : (
+            store.label
+          )
+        }
+      </li>
+      <li class="inline-flex items-center gap-2">
+        <HomeIcon name="book" class="h-5 w-5 text-brand-accent" /><a
+          href="/help/"
+          class="text-brand-accent hover:underline">Read the TesserClip Help<ChevronIcon /></a
+        >
+      </li>
+    </ul>
+  </div>
 </BaseLayout>

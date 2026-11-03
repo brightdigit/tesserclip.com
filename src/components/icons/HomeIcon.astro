@@ -1,0 +1,25 @@
+---
+// The home page's 24 px stroke icons, copied from .agents/designs/01-home.html.
+// One file with a `name` prop keeps the home page's icons out of the way of
+// other pages' icon files. Decorative: always aria-hidden.
+import { HOME_ICONS, type HomeIconName } from './home-icons';
+
+interface Props {
+  name: HomeIconName;
+  class?: string;
+}
+
+const { name, class: className } = Astro.props;
+---
+
+<svg
+  class:list={['h-6 w-6 shrink-0', className]}
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.75"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  set:html={HOME_ICONS[name]}
+/>

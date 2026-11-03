@@ -1,0 +1,12 @@
+---
+// The small › chevron after “Privacy Policy” and “Read the TesserClip Help”.
+interface Props {
+  class?: string;
+}
+const { class: className } = Astro.props;
+---
+
+<svg class:list={['ml-0.5 inline-block h-3 w-3 align-[-1px]', className]} viewBox="0 0 12 12" aria-hidden="true"
+  ><path d="M4.5 2.5 8 6l-3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+  ></path></svg
+>

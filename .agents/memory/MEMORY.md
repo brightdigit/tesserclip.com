@@ -16,3 +16,4 @@ This directory is the memory store for tesserclip.com. It’s versioned in git, 
 - [App help URL contract](app-help-urls.md) — the URLs compiled into TesserClip builds, and why `build.format` must stay `directory`
 - [Go-live plan](go-live-plan.md) — the repo goes public, then GitHub Pages and DNS, then the TestFlight link, then `main`. All of it is Leo’s job.
 - [`node --test` runs TypeScript directly](node-test-type-stripping.md) — keep `src/lib/` erasable TS; config.ts is build-time only; check-links regex-reads APP_HELP_PATHS
+- [Lighthouse as root](lighthouse-as-root.md) — `make lighthouse` needs `--no-sandbox` and Playwright’s Chromium in root agent containers
